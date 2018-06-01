@@ -3,7 +3,6 @@
  * Copyright (c) 1997 Andrew W. Appel.
  */
 
-#include <stdio.h>
 #include "util.h"
 #include "table.h"
 

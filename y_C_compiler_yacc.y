@@ -1,14 +1,8 @@
 %{
 
-////---int constant--
-//#define YYSTYPE char*
-
-#include "lex.yy.c"
-//#include "absyn.h"
-#include <stdio.h>
 #include "util.h"
-#include "error.h"
 #include "lex.yy.c"
+#include "absyn.h"
 int yyerror(string message);
 
 extern int pos;

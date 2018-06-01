@@ -1,8 +1,6 @@
 #ifndef ERROR_H_
 #define ERROR_H_
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <stdarg.h>
 #include "util.h"
 
