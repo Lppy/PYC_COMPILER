@@ -26,51 +26,56 @@ typedef enum {A_plusOp, A_minusOp, A_timesOp, A_divideOp, A_modOp,
 				A_lorOp, 
 				A_eqOp, A_neqOp, A_ltOp, A_leOp, A_gtOp, A_geOp} A_oper;
 
-struct A_var_
-       {enum {A_simpleVar, A_fieldVar, A_subscriptVar} kind;
-        A_pos pos;
-	union {S_symbol simple;
-	       struct {A_var var;
-		       S_symbol sym;} field;
-	       struct {A_var var;
-		       A_exp exp;} subscript;
-	     } u;
-      };
+struct A_var_ {
+	enum {A_simpleVar, A_fieldVar, A_subscriptVar} kind;
+	A_pos pos;
+	union {
+		S_symbol simple;
+		struct {A_var var; S_symbol sym;} field;
+		struct {A_var var; A_exp exp;} subscript;
+	} u;
+};
 
-struct A_exp_
-      {enum {A_varExp, A_nilExp, A_intExp, A_stringExp, A_callExp,
-	       A_opExp, A_recordExp, A_seqExp, A_assignExp, A_ifExp,
-	       A_whileExp, A_forExp, A_breakExp, A_letExp, A_arrayExp,
-	       A_unaryExp, A_conExp,
-	       A_caseExp, A_switchExp, A_continue, A_return } kind;
-       A_pos pos;
-       union {A_var var;
-	      /* nil; - needs only the pos */
-	      int intt;
-	      string stringg;
-	      struct {S_symbol func; A_expList args;} call;
-	      struct {A_oper oper; A_exp left; A_exp right;} op;
-	      struct {S_symbol typ; A_efieldList fields;} record;
-	      A_expList seq;
-	      struct {A_var var; A_exp exp;} assign;
-	      struct {A_exp test, then, elsee;} iff; /* elsee is optional */
-	      struct {A_exp test, body;} whilee;
-	      struct {S_symbol var; A_exp lo,hi,body; bool escape;} forr;
-	      /* breakk; - need only the pos */
-	      struct {A_decList decs; A_exp body;} let;
-	      struct {S_symbol typ; A_exp size, init;} array;
-	    } u;
-     };
+struct A_exp_ {
+	enum {
+		A_varExp, A_nilExp, A_intExp, A_charExp, A_floatExp, A_stringExp, A_callExp, A_conExp,
+		A_opExp, A_recordExp, A_seqExp, A_assignExp, A_ifExp,
+		A_whileExp, A_forExp, A_breakExp, A_letExp, A_arrayExp,
+		A_unaryExp,
+		A_caseExp, A_switchExp, A_continue, A_return 
+	} kind;
+    A_pos pos;
+    union {
+		A_var var;
+		int intt;
+		double floatt;
+		char charr;
+		string stringg;
+		struct {S_symbol func; A_expList args;} call;
+		struct {A_exp left; A_exp mid; A_exp right;} con;
+		struct {A_oper oper; A_exp left; A_exp right;} op;
+		struct {S_symbol typ; A_efieldList fields;} record;
+		A_expList seq;
+		struct {A_var var; A_exp exp;} assign;
+		struct {A_exp test, then, elsee;} iff; /* elsee is optional */
+		struct {A_exp test, body;} whilee;
+		struct {S_symbol var; A_exp lo,hi,body; bool escape;} forr;
+		/* breakk; - need only the pos */
+		struct {A_decList decs; A_exp body;} let;
+		struct {S_symbol typ; A_exp size, init;} array;
+	} u;
+};
 
-struct A_dec_ 
-    {enum {A_functionDec, A_varDec, A_typeDec} kind;
-     A_pos pos;
-     union {A_fundecList function;
-	    /* escape may change after the initial declaration */
-	    struct {S_symbol var; S_symbol typ; A_exp init; bool escape;} var;
-	    A_nametyList type;
-	  } u;
-   };
+struct A_dec_ {
+	enum {A_functionDec, A_varDec, A_structDec} kind;
+    A_pos pos;
+	union {
+		A_fundecList function;
+		/* escape may change after the initial declaration */
+		struct {S_symbol var; S_symbol typ; A_exp init; bool escape;} var;
+		struct {S_symbol name; A_fieldList structure;} structd;
+	} u;
+};
 
 struct A_ty_ {
 	enum {A_nameTy, A_arrayTy, A_structTy} kind;
@@ -88,14 +93,9 @@ struct A_ty_ {
 struct A_field_ {S_symbol name, typ; A_pos pos; bool escape;};
 struct A_fieldList_ {A_field head; A_fieldList tail;};
 struct A_expList_ {A_exp head; A_expList tail;};
-struct A_fundec_ {A_pos pos;
-                 S_symbol name; A_fieldList params; 
-		 S_symbol result; A_exp body;};
-
+struct A_fundec_ {A_pos pos; S_symbol name; A_fieldList params; S_symbol result; A_exp body;};
 struct A_fundecList_ {A_fundec head; A_fundecList tail;};
 struct A_decList_ {A_dec head; A_decList tail;};
-struct A_namety_ {S_symbol name; A_ty ty;};
-struct A_nametyList_ {A_namety head; A_nametyList tail;};
 struct A_efield_ {S_symbol name; A_exp exp;};
 struct A_efieldList_ {A_efield head; A_efieldList tail;};
 
@@ -104,8 +104,6 @@ struct A_efieldList_ {A_efield head; A_efieldList tail;};
 A_var A_SimpleVar(A_pos pos, S_symbol sym);
 A_var A_FieldVar(A_pos pos, A_var var, S_symbol sym);
 A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp);
-//---------------------A_var A_ExpVar(A_pos pos, A_exp);
-
 
 
 A_exp A_VarExp(A_pos pos, A_var var);

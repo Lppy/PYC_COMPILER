@@ -1,87 +1,125 @@
-/*
- * absyn.c - Abstract Syntax Functions. Most functions create an instance of an
- *           abstract syntax rule.
- */
-
 #include "util.h"
 #include "symbol.h" /* symbol table data structures */
 #include "absyn.h"  /* abstract syntax data structures */
 
 A_var A_SimpleVar(A_pos pos, S_symbol sym)
-{A_var p = checked_malloc(sizeof(*p));
- p->kind=A_simpleVar;
- p->pos=pos;
- p->u.simple=sym;
- return p;
+{
+	A_var p = checked_malloc(sizeof(*p));
+	p->kind=A_simpleVar;
+	p->pos=pos;
+	p->u.simple=sym;
+	return p;
 }
 
 A_var A_FieldVar(A_pos pos, A_var var, S_symbol sym)
-{A_var p = checked_malloc(sizeof(*p));
- p->kind=A_fieldVar;
- p->pos=pos;
- p->u.field.var=var;
- p->u.field.sym=sym;
- return p;
+{
+	A_var p = checked_malloc(sizeof(*p));
+	p->kind=A_fieldVar;
+	p->pos=pos;
+	p->u.field.var=var;
+	p->u.field.sym=sym;
+	return p;
 }
 
 A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp)
-{A_var p = checked_malloc(sizeof(*p));
- p->kind=A_subscriptVar;
- p->pos=pos;
- p->u.subscript.var=var;
- p->u.subscript.exp=exp;
- return p;
+{
+	A_var p = checked_malloc(sizeof(*p));
+	p->kind=A_subscriptVar;
+	p->pos=pos;
+	p->u.subscript.var=var;
+	p->u.subscript.exp=exp;
+	return p;
 }
 
 
 A_exp A_VarExp(A_pos pos, A_var var)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_varExp;
- p->pos=pos;
- p->u.var=var;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_varExp;
+	p->pos=pos;
+	p->u.var=var;
+	return p;
 }
 
 A_exp A_NilExp(A_pos pos)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_nilExp;
- p->pos=pos;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_nilExp;
+	p->pos=pos;
+	return p;
 }
 
 A_exp A_IntExp(A_pos pos, int i)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_intExp;
- p->pos=pos;
- p->u.intt=i;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_intExp;
+	p->pos=pos;
+	p->u.intt=i;
+	return p;
+}
+
+A_exp A_CharExp(A_pos pos, char c)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_charExp;
+	p->pos=pos;
+	p->u.charr=c;
+	return p;
+}
+
+A_exp A_FloatExp(A_pos pos, double d)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_floatExp;
+	p->pos=pos;
+	p->u.floatt=d;
+	return p;
 }
 
 A_exp A_StringExp(A_pos pos, string s)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_stringExp;
- p->pos=pos;
- p->u.stringg=s;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_stringExp;
+	p->pos=pos;
+	p->u.stringg=s;
+	return p;
 }
 
 A_exp A_CallExp(A_pos pos, S_symbol func, A_expList args)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_callExp;
- p->pos=pos;
- p->u.call.func=func;
- p->u.call.args=args;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_callExp;
+	p->pos=pos;
+	p->u.call.func=func;
+	p->u.call.args=args;
+	return p;
+}
+
+A_exp A_ConExp(A_pos pos, A_exp left, A_exp mid, A_exp right)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_conExp;
+	p->pos=pos;
+	p->u.con.left=left;
+	p->u.con.mid=mid;
+	p->u.con.right=right;
+	return p;
 }
 
 A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_opExp;
- p->pos=pos;
- p->u.op.oper=oper;
- p->u.op.left=left;
- p->u.op.right=right;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_opExp;
+	p->pos=pos;
+	p->u.op.oper=oper;
+	p->u.op.left=left;
+	p->u.op.right=right;
+	return p;
+}
+
+A_exp A_UnaryExp(A_pos pos, A_unoper oper, A_exp exp)
+{
+	
 }
 
 A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields)
