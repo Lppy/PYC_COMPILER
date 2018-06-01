@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-void C_comment1();
-void C_comment2();
 void count();
 
 int pos = 0;
@@ -20,8 +18,8 @@ E			[Ee][+-]?{D}+
 
 %%
 
-"/*"			{ count(); C_comment1(); }
-"//"			{ count(); C_comment2(); }
+"/*"([^*/]+[\*\/]?)*"*/"	{ count(); puts(yytext); }
+"//"[^\n]*\n				{ count(); puts(yytext); }
 
 "break"			{ count(); return BREAK; }
 "case"			{ count(); return CASE; }
@@ -116,21 +114,6 @@ E			[Ee][+-]?{D}+
 int yywrap() //multiple text
 {
 	return 1;
-}
-
-void C_comment1()
-{
-	char c = getchar();
-	while(1){
-		while(c != '*' && c != 0) c = getchar();
-		if(c == 0 || (c = getchar()) == '/') return;
-	}
-}
-
-void C_comment2()
-{
-	char c = getchar();
-	while(c != '\n' && c != 0) c = getchar();
 }
 
 void count()
