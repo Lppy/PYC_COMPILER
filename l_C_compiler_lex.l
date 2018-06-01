@@ -1,4 +1,6 @@
 %{
+
+#include "util.h"
 #include "y.tab.h"
 
 void count();

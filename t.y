@@ -1,8 +1,5 @@
 %{
-//#define YYSTYPE char*
-#include <stdio.h>
 #include "util.h"
-#include "error.h"
 #include "lex.yy.c"
 int yyerror(string message);
 %}

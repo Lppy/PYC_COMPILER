@@ -1,11 +1,7 @@
 %{
 
-////---int constant--
-//#define YYSTYPE char*
-
+#include "util.h"
 #include "lex.yy.c"
-//#include "absyn.h"
-#include <stdio.h>
 
 extern int pos;
 
