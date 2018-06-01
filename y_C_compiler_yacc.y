@@ -5,21 +5,6 @@
 #include "absyn.h"
 
 #ifndef YYSTYPE
-/*union YYSTYPE {
-        int num; 
-        char* id; 
-        A_exp exp; 
-        A_expList expList; 
-        A_var var; 
-        A_efield efield; 
-        A_efieldList efieldList; 
-        L_constant constant; 
-        A_dec dec; 
-        A_decList decList; 
-        A_ty ty; 
-        A_fieldList fieldList;
-};
-//typedef union YYSTYPE YYSTYPE;*/
 union YACC_TYPE {
         int num; 
         char* id; 
