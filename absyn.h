@@ -12,10 +12,6 @@ typedef struct A_decList_ *A_decList;
 typedef struct A_expList_ *A_expList;
 typedef struct A_field_ *A_field;
 typedef struct A_fieldList_ *A_fieldList;
-typedef struct A_fundec_ *A_fundec;
-typedef struct A_fundecList_ *A_fundecList;
-//typedef struct A_namety_ *A_namety;
-//typedef struct A_nametyList_ *A_nametyList;
 typedef struct A_efield_ *A_efield;
 typedef struct A_efieldList_ *A_efieldList;
 
@@ -40,9 +36,8 @@ struct A_exp_ {
 	enum {
 		A_varExp, A_nilExp, A_intExp, A_charExp, A_floatExp, A_stringExp, A_callExp, A_conExp,
 		A_opExp, A_unaryExp, A_recordExp, A_seqExp, A_assignExp, A_ifExp,
-		A_whileExp, A_forExp, A_breakExp, A_letExp, A_arrayExp,
-		
-		A_caseExp, A_switchExp, A_continue, A_return 
+		A_whileExp, A_forExp, A_breakExp, A_continueExp, A_letExp, A_arrayExp,
+		A_caseExp, A_switchExp, A_returnExp 
 	} kind;
     A_pos pos;
     union {
@@ -54,15 +49,16 @@ struct A_exp_ {
 		struct {S_symbol func; A_expList args;} call;
 		struct {A_exp left; A_exp mid; A_exp right;} con;
 		struct {A_oper oper; A_exp left; A_exp right;} op;
-		struct {S_symbol typ; A_efieldList fields;} record;
+		struct {A_unoper unoper; A_exp exp;} unary;
 		A_expList seq;
 		struct {A_var var; A_exp exp;} assign;
 		struct {A_exp test, then, elsee;} iff; /* elsee is optional */
 		struct {A_exp test, body;} whilee;
-		struct {S_symbol var; A_exp lo,hi,body; bool escape;} forr;
-		/* breakk; - need only the pos */
+		struct {A_exp e1, e2, e3, body;} forr;
 		struct {A_decList decs; A_exp body;} let;
-		struct {S_symbol typ; A_exp size, init;} array;
+		struct {A_exp constant, body;} casee;
+		struct {A_exp test, body;} switchh;
+		struct {A_exp res;} returnn;
 	} u;
 };
 
@@ -70,10 +66,9 @@ struct A_dec_ {
 	enum {A_functionDec, A_varDec, A_structDec} kind;
     A_pos pos;
 	union {
-		A_fundecList function;
-		/* escape may change after the initial declaration */
-		struct {S_symbol var; S_symbol typ; A_exp init; bool escape;} var;
-		struct {S_symbol name; A_fieldList structure;} structd;
+		struct {S_symbol name; A_fieldList params; A_ty result; A_exp body;} function;
+		struct {A_efieldList varList; A_ty typ; bool escape;} var; /* escape may change after the initial declaration */
+		struct {S_symbol name; A_fieldList structure;} structt;
 	} u;
 };
 
@@ -90,11 +85,9 @@ struct A_ty_ {
 
 /* Linked lists and nodes of lists */
 
-struct A_field_ {S_symbol name, typ; A_pos pos; bool escape;};
+struct A_field_ {S_symbol name; A_ty typ; A_pos pos; bool escape;};
 struct A_fieldList_ {A_field head; A_fieldList tail;};
 struct A_expList_ {A_exp head; A_expList tail;};
-struct A_fundec_ {A_pos pos; S_symbol name; A_fieldList params; S_symbol result; A_exp body;};
-struct A_fundecList_ {A_fundec head; A_fundecList tail;};
 struct A_decList_ {A_dec head; A_decList tail;};
 struct A_efield_ {S_symbol name; A_exp exp;};
 struct A_efieldList_ {A_efield head; A_efieldList tail;};
@@ -116,7 +109,6 @@ A_exp A_CallExp(A_pos pos, S_symbol func, A_expList args);
 A_exp A_ConExp(A_pos pos, A_exp left, A_exp mid, A_exp right);
 A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right);
 A_exp A_UnaryExp(A_pos pos, A_unoper oper, A_exp exp);
-//A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields);
 A_exp A_SeqExp(A_pos pos, A_expList seq);
 A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp);
 A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp elsee);
@@ -125,7 +117,6 @@ A_exp A_ForExp(A_pos pos, A_exp e1, A_exp e2, A_exp e3, A_exp body);
 A_exp A_BreakExp(A_pos pos);
 A_exp A_ContinueExp(A_pos pos);
 A_exp A_LetExp(A_pos pos, A_decList decs, A_exp body);
-A_exp A_ArrayExp(A_pos pos, S_symbol typ, A_exp size, A_exp init);
 A_exp A_CaseExp(A_pos pos, A_exp constant, A_exp body);
 A_exp A_SwitchExp(A_pos pos, A_exp test, A_exp body);
 A_exp A_ReturnExp(A_pos pos, A_exp res);

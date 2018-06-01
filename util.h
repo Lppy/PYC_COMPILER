@@ -6,6 +6,7 @@ typedef char bool;
 
 #define TRUE 1
 #define FALSE 0
+#define null NULL
 
 typedef struct L_constant_ *L_constant;
 struct L_constant_ {

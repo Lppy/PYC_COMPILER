@@ -120,217 +120,233 @@ A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right)
 A_exp A_UnaryExp(A_pos pos, A_unoper oper, A_exp exp)
 {
 	A_exp p = checked_malloc(sizeof(*p));
-	p->kind=A_opExp;
 	p->kind=A_unaryExp;
-}
-
-A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_recordExp;
- p->pos=pos;
- p->u.record.typ=typ;
- p->u.record.fields=fields;
- return p;
+	p->pos=pos;
+	p->u.unary.unoper=oper;
+	p->u.unary.exp=exp;
+	return p;
 }
 
 A_exp A_SeqExp(A_pos pos, A_expList seq)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_seqExp;
- p->pos=pos;
- p->u.seq=seq;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_seqExp;
+	p->pos=pos;
+	p->u.seq=seq;
+	return p;
 }
 
 A_exp A_AssignExp(A_pos pos, A_var var, A_exp exp)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_assignExp;
- p->pos=pos;
- p->u.assign.var=var;
- p->u.assign.exp=exp;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_assignExp;
+	p->pos=pos;
+	p->u.assign.var=var;
+	p->u.assign.exp=exp;
+	return p;
 }
 
 A_exp A_IfExp(A_pos pos, A_exp test, A_exp then, A_exp elsee)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_ifExp;
- p->pos=pos;
- p->u.iff.test=test;
- p->u.iff.then=then;
- p->u.iff.elsee=elsee;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_ifExp;
+	p->pos=pos;
+	p->u.iff.test=test;
+	p->u.iff.then=then;
+	p->u.iff.elsee=elsee;
+	return p;
 }
 
 A_exp A_WhileExp(A_pos pos, A_exp test, A_exp body)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_whileExp;
- p->pos=pos;
- p->u.whilee.test=test;
- p->u.whilee.body=body;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_whileExp;
+	p->pos=pos;
+	p->u.whilee.test=test;
+	p->u.whilee.body=body;
+	return p;
 }
 
-A_exp A_ForExp(A_pos pos, S_symbol var, A_exp lo, A_exp hi, A_exp body)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_forExp;
- p->pos=pos;
- p->u.forr.var=var;
- p->u.forr.lo=lo;
- p->u.forr.hi=hi;
- p->u.forr.body=body;
- p->u.forr.escape=TRUE;
- return p;
+A_exp A_ForExp(A_pos pos, A_exp e1, A_exp e2, A_exp e3, A_exp body)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_forExp;
+	p->pos=pos;
+	p->u.forr.e1=e1;
+	p->u.forr.e2=e2;
+	p->u.forr.e3=e3;
+	p->u.forr.body=body;
+	return p;
 }
 
 A_exp A_BreakExp(A_pos pos)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_breakExp;
- p->pos=pos;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_breakExp;
+	p->pos=pos;
+	return p;
+}
+
+A_exp A_ContinueExp(A_pos pos)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_continueExp;
+	p->pos=pos;
+	return p;
 }
 
 A_exp A_LetExp(A_pos pos, A_decList decs, A_exp body)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_letExp;
- p->pos=pos;
- p->u.let.decs=decs;
- p->u.let.body=body;
- return p;
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_letExp;
+	p->pos=pos;
+	p->u.let.decs=decs;
+	p->u.let.body=body;
+	return p;
 }
 
-A_exp A_ArrayExp(A_pos pos, S_symbol typ, A_exp size, A_exp init)
-{A_exp p = checked_malloc(sizeof(*p));
- p->kind=A_arrayExp;
- p->pos=pos;
- p->u.array.typ=typ;
- p->u.array.size=size;
- p->u.array.init=init;
- return p;
+A_exp A_CaseExp(A_pos pos, A_exp constant, A_exp body)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_caseExp;
+	p->pos=pos;
+	p->u.casee.constant=constant;
+	p->u.casee.body=body;
+	return p;
 }
 
-A_dec A_FunctionDec(A_pos pos, A_fundecList function)
-{A_dec p = checked_malloc(sizeof(*p));
- p->kind=A_functionDec;
- p->pos=pos;
- p->u.function=function;
- return p;
+A_exp A_SwitchExp(A_pos pos, A_exp test, A_exp body)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_switchExp;
+	p->pos=pos;
+	p->u.switchh.test=test;
+	p->u.switchh.body=body;
+	return p;
 }
 
-A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init)
-{A_dec p = checked_malloc(sizeof(*p));
- p->kind=A_varDec;
- p->pos=pos;
- p->u.var.var=var;
- p->u.var.typ=typ;
- p->u.var.init=init;
- p->u.var.escape=TRUE;
- return p;
+A_exp A_ReturnExp(A_pos pos, A_exp res)
+{
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_returnExp;
+	p->pos=pos;
+	p->u.returnn.res=res;
+	return p;
 }
 
-A_dec A_TypeDec(A_pos pos, A_nametyList type)
-{A_dec p = checked_malloc(sizeof(*p));
- p->kind=A_typeDec;
- p->pos=pos;
- p->u.type=type;
- return p;
+A_dec A_FunctionDec(A_pos pos, S_symbol name, A_fieldList params, A_ty result, A_exp body)
+{
+	A_dec p = checked_malloc(sizeof(*p));
+	p->kind=A_functionDec;
+	p->pos=pos;
+	p->u.function.name=name;
+	p->u.function.params=params;
+	p->u.function.result=result;
+	p->u.function.body=body;
+	return p;
 }
 
-A_ty A_NameTy(A_pos pos, S_symbol name)
-{A_ty p = checked_malloc(sizeof(*p));
- p->kind=A_nameTy;
- p->pos=pos;
- p->u.name=name;
- return p;
+A_dec A_VarDec(A_pos pos, A_efieldList varList, A_ty typ)
+{
+	A_dec p = checked_malloc(sizeof(*p));
+	p->kind=A_varDec;
+	p->pos=pos;
+	p->u.var.varList=varList;
+	p->u.var.typ=typ;
+	p->u.var.escape=TRUE;
+	return p;
 }
 
-A_ty A_RecordTy(A_pos pos, A_fieldList record)
-{A_ty p = checked_malloc(sizeof(*p));
- p->kind=A_recordTy;
- p->pos=pos;
- p->u.record=record;
- return p;
+A_dec A_StructDec(A_pos pos, S_symbol name, A_fieldList structure)
+{
+	A_dec p = checked_malloc(sizeof(*p));
+	p->kind=A_structDec;
+	p->pos=pos;
+	p->u.structt.name=name;
+	p->u.structt.structure=structure;
+	return p;
 }
 
-A_ty A_ArrayTy(A_pos pos, S_symbol array)
-{A_ty p = checked_malloc(sizeof(*p));
- p->kind=A_arrayTy;
- p->pos=pos;
- p->u.array=array;
- return p;
+A_ty A_NameTy(S_symbol name)
+{
+	A_ty p = checked_malloc(sizeof(*p));
+	p->kind=A_nameTy;
+	p->u.name=name;
+	return p;
 }
 
-A_field A_Field(A_pos pos, S_symbol name, S_symbol typ)
-{A_field p = checked_malloc(sizeof(*p));
- p->pos=pos;
- p->name=name;
- p->typ=typ;
- p->escape=TRUE;
- return p;
+A_ty A_StructTy(S_symbol name)
+{	
+	A_ty p = checked_malloc(sizeof(*p));
+	p->kind=A_structTy;
+	p->u.name=name;
+	return p;
+}
+
+A_ty A_ArrayTy(A_ty tar, int length)
+{
+	A_ty p = checked_malloc(sizeof(*p));
+	p->kind=A_arrayTy;
+	p->u.array.tar=tar;
+	p->u.array.length=length;
+	return p;
+}
+
+A_field A_Field(A_pos pos, S_symbol name, A_ty typ)
+{
+	A_field p = checked_malloc(sizeof(*p));
+	p->pos=pos;
+	p->name=name;
+	p->typ=typ;
+	p->escape=TRUE;
+	return p;
 }
 
 A_fieldList A_FieldList(A_field head, A_fieldList tail)
-{A_fieldList p = checked_malloc(sizeof(*p));
- p->head=head;
- p->tail=tail;
- return p;
+{
+	A_fieldList p = checked_malloc(sizeof(*p));
+	p->head=head;
+	p->tail=tail;
+	return p;
+}
+
+A_fieldList A_MergeFieldList(A_fieldList head, A_fieldList tail)
+{
+	A_fieldList oldp = NULL, p = head;
+	while(p!=NULL) { oldp = p; p=p->tail; }
+	oldp->tail = tail;
+	return head;
 }
 
 A_expList A_ExpList(A_exp head, A_expList tail)
-{A_expList p = checked_malloc(sizeof(*p));
- p->head=head;
- p->tail=tail;
- return p;
-}
-
-A_fundec A_Fundec(A_pos pos, S_symbol name, A_fieldList params, S_symbol result,
-		  A_exp body)
-{A_fundec p = checked_malloc(sizeof(*p));
- p->pos=pos;
- p->name=name;
- p->params=params;
- p->result=result;
- p->body=body;
- return p;
-}
-
-A_fundecList A_FundecList(A_fundec head, A_fundecList tail)
-{A_fundecList p = checked_malloc(sizeof(*p));
- p->head=head;
- p->tail=tail;
- return p;
+{
+	A_expList p = checked_malloc(sizeof(*p));
+	p->head=head;
+	p->tail=tail;
+	return p;
 }
 
 A_decList A_DecList(A_dec head, A_decList tail)
-{A_decList p = checked_malloc(sizeof(*p));
- p->head=head;
- p->tail=tail;
- return p;
-}
-
-A_namety A_Namety(S_symbol name, A_ty ty)
-{A_namety p = checked_malloc(sizeof(*p));
- p->name=name;
- p->ty=ty;
- return p;
-}
-
-A_nametyList A_NametyList(A_namety head, A_nametyList tail)
-{A_nametyList p = checked_malloc(sizeof(*p));
- p->head=head;
- p->tail=tail;
- return p;
+{
+	A_decList p = checked_malloc(sizeof(*p));
+	p->head=head;
+	p->tail=tail;
+	return p;
 }
 
 A_efield A_Efield(S_symbol name, A_exp exp)
-{A_efield p = checked_malloc(sizeof(*p));
- p->name=name;
- p->exp=exp;
- return p;
+{
+	A_efield p = checked_malloc(sizeof(*p));
+	p->name=name;
+	p->exp=exp;
+	return p;
 }
 
 A_efieldList A_EfieldList(A_efield head, A_efieldList tail)
-{A_efieldList p = checked_malloc(sizeof(*p));
- p->head=head;
- p->tail=tail;
- return p;
+{
+	A_efieldList p = checked_malloc(sizeof(*p));
+	p->head=head;
+	p->tail=tail;
+	return p;
 }
 
