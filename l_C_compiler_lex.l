@@ -1,8 +1,5 @@
 %{
 #include "y.tab.h"
-#include "error.h"
-#include <stdio.h>
-#include <string.h>
 
 void count();
 

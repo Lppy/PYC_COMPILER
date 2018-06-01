@@ -1,3 +1,8 @@
+#include "error.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #ifndef UTIL_H_
 #define UTIL_H_
 
