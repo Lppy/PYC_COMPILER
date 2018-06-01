@@ -1,8 +1,44 @@
 %{
-#include "symbol.h"
+
 #include "util.h"
-#include "lex.yy.c"
+#include "symbol.h"
 #include "absyn.h"
+
+#ifndef YYSTYPE
+/*union YYSTYPE {
+        int num; 
+        char* id; 
+        A_exp exp; 
+        A_expList expList; 
+        A_var var; 
+        A_efield efield; 
+        A_efieldList efieldList; 
+        L_constant constant; 
+        A_dec dec; 
+        A_decList decList; 
+        A_ty ty; 
+        A_fieldList fieldList;
+};
+//typedef union YYSTYPE YYSTYPE;*/
+union YACC_TYPE {
+        int num; 
+        char* id; 
+        A_exp exp; 
+        A_expList expList; 
+        A_var var; 
+        A_efield efield; 
+        A_efieldList efieldList; 
+        L_constant constant; 
+        A_dec dec; 
+        A_decList decList; 
+        A_ty ty; 
+        A_fieldList fieldList;
+};
+#define YYSTYPE union YACC_TYPE
+#endif
+
+#include "lex.yy.c"
+
 int yyerror(string message);
 
 extern int pos;
@@ -10,10 +46,10 @@ extern int pos;
 A_ty specifiers_type;
 
 %}
-
+/*
 %union {int num; char* id; A_exp exp; A_expList expList; A_var var; A_efield efield; A_efieldList efieldList; 
         L_constant constant; A_dec dec; A_decList decList; A_ty ty; A_fieldList fieldList;}
-
+*/
 %token<id> IDENTIFIER STRING_LITERAL
 %token<constant> CONSTANT
 
@@ -210,7 +246,7 @@ translation_unit
 external_declaration
         : function_definition {$$=$1;}
         | declaration {$$=$1;}
-        | STRUCT IDENTIFIER '{' struct_declaration_list '}' {$$=A_StructDec(pos,A_StructTy(S_Symbol($2)),$4);}
+        | STRUCT IDENTIFIER '{' struct_declaration_list '}' {$$=A_StructDec(pos,S_Symbol($2),$4);}
         ;
 
 //---A_dec
@@ -229,7 +265,7 @@ declaration_specifiers
         : type_specifier {$$=$1;}
         | STRUCT IDENTIFIER {$$=A_StructTy(S_Symbol($2));}
         | declaration_specifiers '*' {$$=A_ArrayTy($1,0);}
-        | declaration_specifiers '[' constant_expression ']' {$$=A_ArrayTy($1,$3);}
+        | declaration_specifiers '[' CONSTANT ']' {$$=A_ArrayTy($1,$3->u.num);}
         ;
 
 //---A_ty
@@ -262,7 +298,7 @@ compound_statement
         : '{' '}' {$$=A_NilExp(pos);}
         | '{' statement_list '}' {$$=A_SeqExp(pos,$2);} 
         | '{' declaration_list '}' {$$=A_LetExp(pos,$2,null);} 
-        | '{' declaration_list statement_list '}' {$$=A_LetExp(pos,$2,$3);} 
+        | '{' declaration_list statement_list '}' {$$=A_LetExp(pos,$2,A_SeqExp(pos,$3));} 
         ;
 
 //---A_decList
@@ -289,7 +325,7 @@ statement
 
 //---A_exp
 labeled_statement
-        : CASE constant_expression ':' statement {$$=A_CaseExp(pos,$4,A_IntExp(pos, $2));}
+        : CASE constant_expression ':' statement {$$=A_CaseExp(pos,$4,$2);}
         | DEFAULT ':' statement {$$=A_CaseExp(pos,$3,null);}
         ;
 

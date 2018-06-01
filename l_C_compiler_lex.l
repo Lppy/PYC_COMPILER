@@ -17,8 +17,8 @@ E			[Ee][+-]?{D}+
 
 %%
 
-"/*"([^*/]+[\*\/]?)*"*/"	{ count(); puts(yytext); }
-"//"[^\n]*\n				{ count(); puts(yytext); }
+"/*"([^*/]+[\*\/]?)*"*/"	{ count(); }
+"//"[^\n]*\n				{ count(); }
 
 "break"			{ count(); return BREAK; }
 "case"			{ count(); return CASE; }

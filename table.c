@@ -3,6 +3,7 @@
  * Copyright (c) 1997 Andrew W. Appel.
  */
 
+#include <assert.h>
 #include "util.h"
 #include "table.h"
 

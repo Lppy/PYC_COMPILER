@@ -2,8 +2,10 @@
  * symbol.h - Symbols and symbol-tables
  *
  */
+#include "util.h"
 
 typedef struct S_symbol_ *S_symbol;
+struct S_symbol_ {string name; S_symbol next;};
 
 /* Make a unique symbol from a given string.  
  *  Different calls to S_Symbol("foo") will yield the same S_symbol
