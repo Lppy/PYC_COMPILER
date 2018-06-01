@@ -119,7 +119,9 @@ A_exp A_OpExp(A_pos pos, A_oper oper, A_exp left, A_exp right)
 
 A_exp A_UnaryExp(A_pos pos, A_unoper oper, A_exp exp)
 {
-	
+	A_exp p = checked_malloc(sizeof(*p));
+	p->kind=A_opExp;
+	p->kind=A_unaryExp;
 }
 
 A_exp A_RecordExp(A_pos pos, S_symbol typ, A_efieldList fields)

@@ -39,9 +39,9 @@ struct A_var_ {
 struct A_exp_ {
 	enum {
 		A_varExp, A_nilExp, A_intExp, A_charExp, A_floatExp, A_stringExp, A_callExp, A_conExp,
-		A_opExp, A_recordExp, A_seqExp, A_assignExp, A_ifExp,
+		A_opExp, A_unaryExp, A_recordExp, A_seqExp, A_assignExp, A_ifExp,
 		A_whileExp, A_forExp, A_breakExp, A_letExp, A_arrayExp,
-		A_unaryExp,
+		
 		A_caseExp, A_switchExp, A_continue, A_return 
 	} kind;
     A_pos pos;
