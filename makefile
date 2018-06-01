@@ -19,7 +19,7 @@ util.o: util.c
 	gcc -c util.c
 
 y.tab.c: t.y
-	@yacc -d t.y
+	@yacc -d t.y 2>/dev/null
 
 lex.yy.c: l_C_compiler_lex.l
 	lex l_C_compiler_lex.l
