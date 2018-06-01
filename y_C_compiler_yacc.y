@@ -6,10 +6,12 @@
 #include "lex.yy.c"
 //#include "absyn.h"
 #include <stdio.h>
+#include "util.h"
+#include "error.h"
+#include "lex.yy.c"
+int yyerror(string message);
 
 extern int pos;
-
-int yyerror(char* msg);
 
 A_ty specifiers_type;
 
@@ -345,10 +347,13 @@ parameter_declaration
 
 %%
 
-int main() {
+int main(){
+    error_reset();
     return yyparse();
 }
 
-int yyerror(char* msg) {
-    printf("%s",msg);
+int yyerror(string message){
+    puts("yyerror triggered!!");
+    parse_error(-1, message);
+    return 1;
 }
