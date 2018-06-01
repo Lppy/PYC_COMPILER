@@ -1,5 +1,5 @@
 %{
-
+#include "symbol.h"
 #include "util.h"
 #include "lex.yy.c"
 #include "absyn.h"
@@ -29,9 +29,9 @@ A_ty specifiers_type;
 %type<efield> init_declarator
 %type<efieldList> init_declarator_list
 %type<fieldList> struct_declaration_list struct_declaration struct_declarator_list parameter_type_list parameter_list
-%type<A_ty> declaration_specifiers type_specifier parameter_declaration
-%type<A_dec> external_declaration declaration function_definition 
-%type<A_decList> translation_unit declaration_list
+%type<ty> declaration_specifiers type_specifier parameter_declaration
+%type<dec> external_declaration declaration function_definition 
+%type<decList> translation_unit declaration_list
 
 %start translation_unit
 
@@ -40,7 +40,7 @@ A_ty specifiers_type;
 //---A_expList
 argument_expression_list
         : assignment_expression {$$ = A_ExpList($1, null);}
-        | argument_expression_list ',' assignment_expression {$$ = A_ExpList($2, $1);}
+        | argument_expression_list ',' assignment_expression {$$ = A_ExpList($3, $1);}
         ;
 
 //---A_exp
@@ -66,7 +66,7 @@ postfix_expression
 //---A_var
 postfix_var
         : IDENTIFIER {$$ = A_SimpleVar(pos, S_Symbol($1));}
-        | postfix_var '[' expression ']' {$$ = A_SubscriptVar(pos, $1, A_SeqExp(pos, $3);}
+        | postfix_var '[' expression ']' {$$ = A_SubscriptVar(pos, $1, A_SeqExp(pos, $3));}
         | postfix_var '.' IDENTIFIER {$$ = A_FieldVar(pos, $1, S_Symbol($3));}
         | postfix_var PTR_OP IDENTIFIER {$$ = A_FieldVar(pos, A_SubscriptVar(pos, $1, A_IntExp(pos, 0)), S_Symbol($3)); }
         | '(' unary_var ')' {$$ = $2;}
@@ -175,7 +175,7 @@ expression
 //---A_exp
 assignment_expression
         : conditional_expression {$$ = $1;}
-        | unary_var '=' assignment_expression {$$ = A_AssignExp(pos, $1, $3)}
+        | unary_var '=' assignment_expression {$$ = A_AssignExp(pos, $1, $3);}
         ;
         
 //---A_exp
@@ -192,7 +192,7 @@ init_declarator
 //---A_efieldList
 init_declarator_list
         : init_declarator {$$=A_EfieldList($1,null);}
-        | init_declarator_list ',' init_declarator {$$=A_EfieldList($2,$1);}
+        | init_declarator_list ',' init_declarator {$$=A_EfieldList($3,$1);}
         ;
 
 //---A_exp
@@ -215,7 +215,7 @@ external_declaration
 
 //---A_dec
 declaration
-        : declaration_specifiers init_declarator_list ';' {$$=A_VarDec(pos,$2,$1));}
+        : declaration_specifiers init_declarator_list ';' {$$=A_VarDec(pos,$2,$1);}
         ;
 
 //---A_dec
@@ -289,7 +289,7 @@ statement
 
 //---A_exp
 labeled_statement
-        : CASE constant_expression ':' statement {$$=A_CaseExp(pos,$4,A_IntExp($2));}
+        : CASE constant_expression ':' statement {$$=A_CaseExp(pos,$4,A_IntExp(pos, $2));}
         | DEFAULT ':' statement {$$=A_CaseExp(pos,$3,null);}
         ;
 

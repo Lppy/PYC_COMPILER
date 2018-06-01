@@ -23,30 +23,19 @@ E			[Ee][+-]?{D}+
 "break"			{ count(); return BREAK; }
 "case"			{ count(); return CASE; }
 "char"			{ count(); return CHAR; }
-"const"			{ count(); return CONST; }
 "continue"		{ count(); return CONTINUE; }
 "default"		{ count(); return DEFAULT; }
 "do"			{ count(); return DO; }
-"double"		{ count(); return DOUBLE; }
 "else"			{ count(); return ELSE; }
-"enum"			{ count(); return ENUM; }
 "float"			{ count(); return FLOAT; }
 "for"			{ count(); return FOR; }
 "if"			{ count(); return IF; }
 "int"			{ count(); return INT; }
 "return"		{ count(); return RETURN; }
-"short"			{ count(); return SHORT; }
-"signed"		{ count(); return SIGNED; }
-"static"		{ count(); return STATIC; }
 "struct"		{ count(); return STRUCT; }
 "switch"		{ count(); return SWITCH; }
-"typedef"		{ count(); return TYPEDEF; }
-"union"			{ count(); return UNION; }
-"unsigned"		{ count(); return UNSIGNED; }
 "void"			{ count(); return VOID; }
 "while"			{ count(); return WHILE; }
-
-"sizeof"		{ count(); return SIZEOF; }
 
 
 {L}({L}|{D})*	{ count(); yylval.id = strdup(yytext); return IDENTIFIER; }
@@ -58,21 +47,9 @@ E			[Ee][+-]?{D}+
 '(\\.|[^\\'])+'		{ count(); char a = yytext[strlen(yytext)-2]; yylval.constant = L_Char(a); return CONSTANT; }
 \"(\\.|[^\\"])*\"	{ count(); yytext[strlen(yytext)-1] = 0; yylval.id = strdup(yytext+1); return STRING_LITERAL; }
 
-"..."			{ count(); return ELLIPSIS; }
-">>="			{ count(); return RIGHT_ASSIGN; }
-"<<="			{ count(); return LEFT_ASSIGN; }
-"+="			{ count(); return ADD_ASSIGN; }
-"-="			{ count(); return SUB_ASSIGN; }
-"*="			{ count(); return MUL_ASSIGN; }
-"/="			{ count(); return DIV_ASSIGN; }
-"%="			{ count(); return MOD_ASSIGN; }
-"&="			{ count(); return AND_ASSIGN; }
-"^="			{ count(); return XOR_ASSIGN; }
-"|="			{ count(); return OR_ASSIGN; }
+
 ">>"			{ count(); return RIGHT_OP; }
 "<<"			{ count(); return LEFT_OP; }
-"++"			{ count(); return INC_OP; }
-"--"			{ count(); return DEC_OP; }
 "->"			{ count(); return PTR_OP; }
 "&&"			{ count(); return AND_OP; }
 "||"			{ count(); return OR_OP; }
