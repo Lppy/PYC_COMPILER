@@ -1,7 +1,6 @@
 %{
-//#include "util.h"
-#include "util.c"
 #include "y.tab.h"
+#include "error.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -108,9 +107,9 @@ E			[Ee][+-]?{D}+
 "^"				{ count(); return '^'; }
 "|"				{ count(); return '|'; }
 "?"				{ count(); return '?'; }
-
-[ \t\v\n\f]		{ count(); /* skip blank character */ }
-.				{ count(); /* ignore bad characters */ }
+"\n"			{ count(); error_newline();}
+[ \t\v\f]		{ count(); /* skip blank character */ }
+.				{ count();  parse_error(pos, "unknown character");/* bad characters */ }
 
 %%
 

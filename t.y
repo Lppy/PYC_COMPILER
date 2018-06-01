@@ -2,8 +2,9 @@
 //#define YYSTYPE char*
 #include <stdio.h>
 #include "util.h"
+#include "error.h"
 #include "lex.yy.c"
-int yyerror(char* msg);
+int yyerror(string message);
 %}
 %union {char* id; L_constant constant;}
 %token<constant> CONSTANT
@@ -325,10 +326,13 @@ parameter_declaration
 
 %%
 
-int main() {
+int main(){
+    error_reset();
     return yyparse();
 }
 
-int yyerror(char* msg) {
-    printf("%s",msg);
+int yyerror(string message){
+    puts("yyerror");
+    parse_error(-1, message);
+    return 1;
 }
