@@ -3,6 +3,7 @@
 #include "util.h"
 #include "symbol.h"
 #include "absyn.h"
+#include "error.h"
 
 #ifndef YYSTYPE
 union YACC_TYPE {
@@ -231,7 +232,8 @@ translation_unit
 external_declaration
         : function_definition {$$=$1;}
         | declaration {$$=$1;}
-        | STRUCT IDENTIFIER '{' struct_declaration_list '}' {$$=A_StructDec(pos,S_Symbol($2),$4);}
+        | STRUCT IDENTIFIER '{' struct_declaration_list '}' ';'{$$=A_StructDec(pos,S_Symbol($2),$4);}
+        | STRUCT IDENTIFIER '{' struct_declaration_list '}' error ';'{parse_error(pos, "unexpected ';'");}
         ;
 
 //---A_dec
