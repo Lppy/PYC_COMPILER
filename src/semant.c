@@ -2,14 +2,14 @@
 #include <assert.h>
 #include "env.h"
 
-expty expTy(Tr_exp exp , Ty_ty ty)
+struct expty expTy(Tr_exp exp , Ty_ty ty)
 {
     expty e ;
     e.exp = exp ; e.ty = ty ;
     return e ;
 }
 
-expty  transExp(S_table venv , S_table tenv , A_exp exp  , Tr_level level )  // done  «Œ™¡ÀºÏ≤‚break «∑Ò‘⁄’?»∑µƒŒª÷√
+struct expty transExp(S_table venv , S_table tenv , A_exp exp  , Tr_level level )  // done  «Œ™¡ÀºÏ≤‚break «∑Ò‘⁄’?»∑µƒŒª÷√
 {
     static bool done  = false ;
   if (exp == NULL )
