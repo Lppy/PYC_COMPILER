@@ -61,7 +61,6 @@ struct A_exp_ {
 		struct {A_exp res;} returnn;
 	} u;
 };
-
 struct A_dec_ {
 	enum {A_functionDec, A_varDec, A_structDec} kind;
     A_pos pos;
