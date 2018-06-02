@@ -18,6 +18,8 @@ struct Ty_tyList_ {Ty_ty head; Ty_tyList tail;};
 struct Ty_field_ {S_symbol name; Ty_ty ty;};
 struct Ty_fieldList_ {Ty_field head; Ty_fieldList tail;};
 
+bool Ty_IsNum(Ty_ty ty);
+
 Ty_ty Ty_Nil(void);
 Ty_ty Ty_Int(void);
 Ty_ty Ty_Float(void);

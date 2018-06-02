@@ -1,11 +1,5 @@
-#include <stdio.h>
 #include <assert.h>
-//#include "temp.h"
 #include "tree.h"
-
-void* checked_malloc(int size){
-	return malloc(size);
-}
 
 T_expList T_ExpList(T_exp head, T_expList tail)
 {
@@ -47,8 +41,7 @@ T_stm T_Jump(T_exp exp, Temp_labelList labels)
 	return p;
 }
 
-T_stm T_Cjump(T_relOp op, T_exp left, T_exp right, 
-          Temp_label trues, Temp_label falses)
+T_stm T_Cjump(T_relOp op, T_exp left, T_exp right, Temp_label trues, Temp_label falses)
 {
 	T_stm p=(T_stm)checked_malloc(sizeof(*p));
 	p->kind=T_CJUMP;
@@ -95,7 +88,7 @@ T_exp T_Mem(T_exp exp)
 	return p;
 }
  
-T_exp T_Temp(Temp_temp temp)//temp
+T_exp T_Temp(Temp_temp temp)
 {
 	T_exp p=(T_exp)checked_malloc(sizeof(*p));
 	p->kind=T_TEMP;
@@ -112,7 +105,7 @@ T_exp T_Eseq(T_stm stm, T_exp exp)
 	return p;
 }
  
-T_exp T_Name(Temp_label name)//name
+T_exp T_Name(Temp_label name)
 {
 	T_exp p=(T_exp)checked_malloc(sizeof(*p));
 	p->kind=T_NAME;
@@ -120,7 +113,7 @@ T_exp T_Name(Temp_label name)//name
 	return p;
 }
  
-T_exp T_Const(T_const constant)//
+T_exp T_Const(T_const constant)
 {
 	T_exp p=(T_exp)checked_malloc(sizeof(*p));
 	p->kind=T_CONST;

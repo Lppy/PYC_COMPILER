@@ -1,6 +1,8 @@
 #ifndef SYMBOL_H_
 #define SYMBOL_H_
+
 #include "util.h"
+#include "table.h"
 
 typedef struct S_symbol_ *S_symbol;
 struct S_symbol_ {string name; S_symbol next;};

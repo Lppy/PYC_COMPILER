@@ -62,6 +62,12 @@ Ty_fieldList Ty_FieldList(Ty_field head, Ty_fieldList tail)
 	return p;
 }
 
+bool Ty_IsNum(Ty_ty ty){
+	if(ty->kind==Ty_int||ty->kind==Ty_float||ty->kind==Ty_char)
+		return TRUE;
+	return FALSE;
+}
+
 static char str_ty[][12] = {
 	"ty_nil", "ty_int", "ty_float", "ty_char", "ty_string", 
 	"ty_array", "ty_struct", "ty_void"
