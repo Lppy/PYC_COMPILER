@@ -8,6 +8,7 @@ static IntList linePos = NULL;
 static IntList intList(int i, IntList rest){
 	IntList l= checked_malloc(sizeof *l);
 	l->i=i; l->rest=rest;
+	l->IsReport=FALSE;
 	return l;
 }
 
@@ -27,15 +28,17 @@ void parse_error(int pos, string message, ...){
   		line_count--;
   	}
 
-	if (lines){
+	if (lines && (lines->IsReport)==FALSE){
 		fprintf(stderr, "\nError at line % d: \n", line_count);
 		fprintf(stderr, "     position % d: \n", pos - lines->i);
-		if(*message)
+		lines->IsReport=TRUE;
+		if(*message){
 			va_start(ap, message);
   			vfprintf(stderr, message, ap);
   			va_end(ap);
   			fprintf(stderr,"\n");
-			fprintf(stderr, "%s\n", message);
+  			// fprintf(stderr, "%s\n", message);
+  		}	
 	}
 
 }

@@ -7,7 +7,7 @@
 extern int pos;
 // extern FILE *yyin;
 
-typedef struct intList {int i; struct intList *rest;} *IntList;
+typedef struct intList {int i; bool IsReport; struct intList *rest;} *IntList;
 
 void error_newline(void);
 void parse_error(int pos, string message, ...);

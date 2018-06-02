@@ -242,7 +242,8 @@ external_declaration
         : function_definition {$$=$1;}
         | declaration {$$=$1;}
         | STRUCT IDENTIFIER '{' struct_declaration_list '}' ';'{$$=A_StructDec(pos,S_Symbol($2),$4);}
-        | STRUCT IDENTIFIER '{' struct_declaration_list '}' error ';'{parse_error(pos, "unexpected ';'");}
+
+        | error {parse_error(pos, "unknown external declaration");} external_declaration {$$=$3;}
         ;
 
 //---A_dec
@@ -375,7 +376,7 @@ parameter_declaration
 int main(){
     error_reset();
     int res = yyparse();
-    A_decList pro = PARSE_RES;puts("AAA");
+    A_decList pro = PARSE_RES;puts("finished");
     while(pro!=NULL){
         A_dec p = pro->head;
         switch(p->kind){
@@ -399,7 +400,5 @@ int main(){
 
 int yyerror(char* message){
     puts("yyerror triggered!!");
-    puts(message);
-    parse_error(-1, message);
     return 1;
 }
