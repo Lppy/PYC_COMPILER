@@ -2,3 +2,4 @@ parser
 1
 build/
 .DS_Store
+.vscode/
