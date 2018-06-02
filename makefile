@@ -1,5 +1,5 @@
-# CC = gcc
-# OBJ = parser.o error.o until.o 
+CC = gcc
+objects = obj/y.tab.o obj/error.o obj/util.o obj/absyn.o obj/symbol.o obj/table.o
 
 # make:$(OBJ)
 # 	$(CC) -o parser $(OBJ)
@@ -7,30 +7,30 @@
 # parser.o: y.tab.h
 # @yacc -d t.y  2>/dev/null
 
-parser: y.tab.o error.o util.o absyn.o symbol.o table.o
-	gcc -o parser y.tab.o error.o util.o absyn.o symbol.o table.o
+parser: $(objects)
+	gcc -o parser $(objects)
 
-y.tab.o: y.tab.c lex.yy.c
-	gcc -c y.tab.c
+obj/y.tab.o: src/y.tab.c src/lex.yy.c
+	gcc -o obj/y.tab.o -c src/y.tab.c -Iinclude
 
-error.o: error.c error.h
-	gcc -c error.c
+obj/error.o: src/error.c include/error.h
+	gcc -o obj/error.o -c src/error.c -Iinclude
 
-absyn.o: absyn.c absyn.h
-	gcc -c absyn.c
+obj/absyn.o: src/absyn.c include/absyn.h
+	gcc -o obj/absyn.o -c src/absyn.c -Iinclude
 
-symbol.o: symbol.c symbol.h
-	gcc -c symbol.c
+obj/symbol.o: src/symbol.c include/symbol.h
+	gcc -o obj/symbol.o -c src/symbol.c -Iinclude
 
-table.o: table.c table.h
-	gcc -c table.c
+obj/table.o: src/table.c include/table.h
+	gcc -o obj/table.o -c src/table.c -Iinclude
 
-util.o: util.c
-	gcc -c util.c
+obj/util.o: src/util.c include/util.h
+	gcc -o obj/util.o -c src/util.c -Iinclude
 
-y.tab.c: y_C_compiler_yacc.y
-	yacc -d y_C_compiler_yacc.y 
+src/y.tab.c: y_C_compiler_yacc.y
+	yacc -o src/y.tab.c -d y_C_compiler_yacc.y 
 
-lex.yy.c: l_C_compiler_lex.l
-	lex l_C_compiler_lex.l
+src/lex.yy.c: l_C_compiler_lex.l
+	lex -o src/lex.yy.c l_C_compiler_lex.l
 	
