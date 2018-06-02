@@ -1,9 +1,10 @@
 #ifndef TRANSLATE_H_
 #define TRANSLATE_H_
 
+#include "util.h"
 #include "frame.h"
 #include "absyn.h"
-
+#include "tree.h"
   
 typedef struct Tr_access_ *Tr_access;  
 struct  Tr_access_ { Tr_level level; F_access access; };
@@ -44,13 +45,13 @@ struct Cx Tr_unCx(Tr_exp exp);
 
 patchList PatchList(Temp_label *head , patchList patchlist);
 void doPatch(patchList patchlist , Temp_label label);
-patchList joinPatch(patchList ftrst, patchList second);
+//patchList joinPatch(patchList ftrst, patchList second);
 
 
 
 Tr_exp Tr_nilExp(void);
 Tr_exp Tr_intExp(int i);
-Tr_exp Tr_floatExp(double d);
+Tr_exp Tr_floatExp(float f);
 Tr_exp Tr_charExp(char c);
 Tr_exp Tr_stringExp(string str);
 
@@ -60,17 +61,17 @@ Tr_exp Tr_fieldVar(Tr_exp base, int offset);
 
 Tr_exp Tr_binopExp(Tr_exp left, Tr_exp right, A_oper oper);
 Tr_exp Tr_relopExp(Tr_exp left, Tr_exp right, A_oper oper);
-Tr_exp Tr_unaryopExp(Tr_exp left, Tr_exp right, A_unoper unoper);//
+Tr_exp Tr_unaryopExp(Tr_exp exp, A_unoper unoper);//
 
 Tr_exp Tr_seqExp(Tr_expList explist);
 
-Tr_exp Tr_conExp(Tr_exp left, Tr_exp mid, Tr_exp right);//
+Tr_exp Tr_conExp(Tr_exp left, Tr_exp mid, Tr_exp right);
 Tr_exp Tr_ifExp(Tr_exp test, Tr_exp then, Tr_exp elsee);
 Tr_exp Tr_assignExp(Tr_exp dst, Tr_exp src);
 Tr_exp Tr_whileExp(Tr_exp test, Tr_exp body, bool isbreak);
-Tr_exp Tr_forExp(Tr_exp e1, Tr_exp e2, Tr_exp e3, Tr_exp body);//
+Tr_exp Tr_forExp(Tr_exp e1, Tr_exp e2, Tr_exp e3, Tr_exp body);
 Tr_exp Tr_breakExp();
-Tr_exp Tr_continueExp();//
+Tr_exp Tr_continueExp();
 Tr_exp Tr_letExp(Tr_expList declist, Tr_exp exp);
 Tr_exp Tr_caseExp(Tr_exp constant, Tr_exp body);//
 Tr_exp Tr_switchExp(Tr_exp test, Tr_exp body);//
@@ -86,6 +87,7 @@ Tr_exp Tr_funDec(Tr_exp body);//
 Tr_exp Tr_StaticLink(Tr_level now, Tr_level def);
 
 Tr_expList Tr_ExpList(Tr_exp head , Tr_expList tail);
+void Tr_FreeExpList(Tr_expList expList);
 
 void Tr_procEntryExit(Tr_level level, Tr_exp body, Tr_accesslist formals);
 
