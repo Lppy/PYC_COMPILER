@@ -4,6 +4,7 @@
 #include "symbol.h"
 #include "absyn.h"
 #include "error.h"
+#include "prabsyn.h"
 
 #ifndef YYSTYPE
 union YACC_TYPE {
@@ -388,6 +389,7 @@ parameter_declaration
 int main(){
     error_reset();
     int res = yyparse();
+    /*
     A_decList pro = PARSE_RES;puts("finished");
     while(pro!=NULL){
         A_dec p = pro->head;
@@ -407,6 +409,8 @@ int main(){
         }
         pro = pro->tail;
     }
+    */
+    pr_decList(stdout, PARSE_RES, 0);
     return 0;
 }
 
