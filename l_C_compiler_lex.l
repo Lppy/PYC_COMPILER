@@ -83,6 +83,7 @@ E			[Ee][+-]?{D}+
 "?"				{ count(); return '?'; }
 "\n"			{ count(); error_newline();}
 [ \t\v\f]		{ count(); /* skip blank character */ }
+"#"				{ return 0; }
 .				{ count();  parse_error(pos, "unknown character");/* bad characters */ }
 
 %%

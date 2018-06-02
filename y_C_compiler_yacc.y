@@ -17,6 +17,7 @@ union YACC_TYPE {
         A_dec dec; 
         A_decList decList; 
         A_ty ty; 
+        A_field field;
         A_fieldList fieldList;
 };
 #define YYSTYPE union YACC_TYPE
@@ -24,11 +25,13 @@ union YACC_TYPE {
 
 #include "lex.yy.c"
 
-int yyerror(string message);
+int yyerror(char* message);
 
 extern int pos;
 
 A_ty specifiers_type;
+
+A_decList PARSE_RES;
 
 %}
 /*
@@ -49,12 +52,13 @@ A_ty specifiers_type;
 %type<var> postfix_var unary_var
 %type<efield> init_declarator
 %type<efieldList> init_declarator_list
+%type<field> parameter_declaration
 %type<fieldList> struct_declaration_list struct_declaration struct_declarator_list parameter_type_list parameter_list
-%type<ty> declaration_specifiers type_specifier parameter_declaration
+%type<ty> declaration_specifiers type_specifier 
 %type<dec> external_declaration declaration function_definition 
 %type<decList> translation_unit declaration_list
 
-%start translation_unit
+%start program_begin
 
 %%
 
@@ -221,7 +225,12 @@ constant_expression
         : conditional_expression {$$=$1;}
         ;
 
-//---A_decList(begin)
+//---BEGIN
+program_begin
+        : translation_unit {PARSE_RES=$1;}
+        ;
+
+//---A_decList
 translation_unit
         : external_declaration {$$=A_DecList($1, null);}
         | translation_unit external_declaration {$$=A_DecList($2, $1);}
@@ -250,7 +259,7 @@ declaration_specifiers
         : type_specifier {$$=$1;}
         | STRUCT IDENTIFIER {$$=A_StructTy(S_Symbol($2));}
         | declaration_specifiers '*' {$$=A_ArrayTy($1,0);}
-        | declaration_specifiers '[' CONSTANT ']' {$$=A_ArrayTy($1,$3->u.num);}
+        | declaration_specifiers '[' CONSTANT ']' {if($3->kind==L_num) $$=A_ArrayTy($1,$3->u.num); else yyerror("Wrong type of array length!");}
         ;
 
 //---A_ty
@@ -350,25 +359,45 @@ parameter_type_list
 
 //---A_fieldList
 parameter_list
-        : parameter_declaration {$$=A_FieldList(A_Field(pos,null,$1),null);}
-        | parameter_list ',' parameter_declaration {$$=A_FieldList(A_Field(pos,null,$3),$1);}
+        : parameter_declaration {$$=A_FieldList($1,null);}
+        | parameter_list ',' parameter_declaration {$$=A_FieldList($3,$1);}
         ;
 
-//---A_ty
+//---A_field
 parameter_declaration
-        : declaration_specifiers IDENTIFIER {$$=$1;}
-        | declaration_specifiers {$$=$1;}
+        : declaration_specifiers IDENTIFIER {$$=A_Field(pos,S_Symbol($2),$1);}
         ;
 
 %%
 
 int main(){
     error_reset();
-    return yyparse();
+    int res = yyparse();
+    A_decList pro = PARSE_RES;puts("AAA");
+    while(pro!=NULL){
+        A_dec p = pro->head;
+        switch(p->kind){
+        case A_structDec: printf("%s\n",S_name(p->u.structt.name)); break;
+        case A_varDec: {
+            A_efieldList vars = p->u.var.varList;
+            while(vars!=NULL){
+                A_efield var = vars->head;
+                printf("%s ",S_name(var->name));
+                vars = vars->tail;
+            }
+            printf("\n");
+        }
+        break;
+        case A_functionDec: printf("%s\n",S_name(p->u.function.name)); break;
+        }
+        pro = pro->tail;
+    }
+    return 0;
 }
 
-int yyerror(string message){
+int yyerror(char* message){
     puts("yyerror triggered!!");
+    puts(message);
     parse_error(-1, message);
     return 1;
 }
