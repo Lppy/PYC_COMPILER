@@ -17,10 +17,11 @@ void error_newline(void){
  	linePos = intList(pos, linePos);
 }
 
-void parse_error(int pos, string message, ...){
+void parse_error(string message, ...){
 	va_list ap;
  	IntList lines = linePos;
  	int line_count = lineNum;
+ 	int i;
 
   	anyErrors=TRUE;
   	while (lines && lines->i >= pos){
@@ -30,7 +31,9 @@ void parse_error(int pos, string message, ...){
 
 	if (lines && (lines->IsReport)==FALSE){
 		fprintf(stderr, "\nError at line % d: \n", line_count);
-		fprintf(stderr, "     position % d: \n", pos - lines->i);
+		fprintf(stderr, "%s\n", linebuffer);
+		for(i=0; i<pos - lines->i; i++)fprintf(stderr, " ");
+		fprintf(stderr, "^\n");
 		lines->IsReport=TRUE;
 		if(*message){
 			va_start(ap, message);

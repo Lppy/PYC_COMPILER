@@ -4,7 +4,8 @@
 #include "y.tab.h"
 
 void count();
-
+char linebuffer[500];
+int linebuffer_pos=0;
 int pos = 0;
 
 %}
@@ -81,10 +82,10 @@ E			[Ee][+-]?{D}+
 "^"				{ count(); return '^'; }
 "|"				{ count(); return '|'; }
 "?"				{ count(); return '?'; }
-"\n"			{ count(); error_newline();}
+"\n"			{ count(); linebuffer_pos=0; error_newline();}
 [ \t\v\f]		{ count(); /* skip blank character */ }
 "#"				{ return 0; }
-.				{ count();  parse_error(pos, "unknown character");/* bad characters */ }
+.				{ count();  parse_error("unknown character");/* bad characters */ }
 
 %%
 
@@ -96,6 +97,9 @@ int yywrap() //multiple text
 void count()
 {
 	int i;
-	for (i=0; yytext[i]!='\0'; i++)
+	strcpy(linebuffer+linebuffer_pos, yytext);
+	for (i=0; yytext[i]!='\0'; i++){
 		pos++;
+		linebuffer_pos++;
+	}
 }

@@ -243,18 +243,23 @@ external_declaration
         | declaration {$$=$1;}
         | STRUCT IDENTIFIER '{' struct_declaration_list '}' ';'{$$=A_StructDec(pos,S_Symbol($2),$4);}
 
-        | error {parse_error(pos, "unknown external declaration");} external_declaration {$$=$3;}
+        | STRUCT IDENTIFIER '{' struct_declaration_list '}' error {parse_error("unexpected ';'");} ';'{$$=A_StructDec(pos,S_Symbol($2),$4);}
+        | error {parse_error("unknown external declaration");} external_declaration {$$=$3;}
         ;
 
 //---A_dec
 declaration
         : declaration_specifiers init_declarator_list ';' {$$=A_VarDec(pos,$2,$1);}
+        | declaration_specifiers init_declarator_list error {parse_error("unexpected ';'");} ';' {$$=A_VarDec(pos,$2,$1);}
+        | error {parse_error("unknown declaration");} declaration
         ;
 
 //---A_dec
 function_definition
         : declaration_specifiers IDENTIFIER '(' parameter_type_list ')' compound_statement {$$=A_FunctionDec(pos,S_Symbol($2),$4,$1,$6);}
         | declaration_specifiers IDENTIFIER '(' ')' compound_statement {$$=A_FunctionDec(pos,S_Symbol($2),null,$1,$5);}
+
+        | declaration_specifiers IDENTIFIER '(' error {parse_error("unexpected ')' or illegal parameter list");} ')'
         ;
 
 //---A_ty
@@ -263,6 +268,7 @@ declaration_specifiers
         | STRUCT IDENTIFIER {$$=A_StructTy(S_Symbol($2));}
         | declaration_specifiers '*' {$$=A_ArrayTy($1,0);}
         | declaration_specifiers '[' CONSTANT ']' {if($3->kind==L_num) $$=A_ArrayTy($1,$3->u.num); else yyerror("Wrong type of array length!");}
+        | error {parse_error("unknown type");}
         ;
 
 //---A_ty
@@ -282,7 +288,10 @@ struct_declaration_list
 //---A_fieldList
 struct_declaration
         : declaration_specifiers {specifiers_type=$1;} struct_declarator_list ';' {$$=$3;}
+        | declaration_specifiers error {parse_error("illegal component");}
         ;
+
+
 
 //---A_fieldList 
 struct_declarator_list
@@ -318,12 +327,15 @@ statement
         | selection_statement {$$=$1;}
         | iteration_statement {$$=$1;}
         | jump_statement {$$=$1;}
+        | error {parse_error("illegal statement");} statement {$$=$3;}
         ;
 
 //---A_exp
 labeled_statement
         : CASE constant_expression ':' statement {$$=A_CaseExp(pos,$4,$2);}
         | DEFAULT ':' statement {$$=A_CaseExp(pos,$3,null);}
+        | CASE constant_expression error {parse_error("unexpected ':'");} statement 
+        | DEFAULT error {parse_error("unexpected ':'");} statement
         ;
 
 //---A_exp
