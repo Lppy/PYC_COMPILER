@@ -397,59 +397,88 @@ case A_varDec :
     S_enter(venv, dec->u.var.var ,E_VarEntry(acc ,tmp.ty));
     return Tr_varDec(acc, tmp.exp);
 }    
+
+
+{
+    case A_structDec:
+        {
+            Ty_ty struct_ty; 
+            A_fieldList tmp = dec->u.structt.structure;
+            if(innerIdentifiers(dec->u.structt.name) || S_look(tenv, dec->u.structt.name))
+            {
+                assert(0);
+            }
+            S_enter(tenv, dec->u.structt.name, dec->u.structt.name);
+            struct_ty = transTy(tenv, dec->u.structt.name);
+            if(tmp){
+                Ty_fieldList structure = Ty_FieldList(Ty_Field(tmp->head->name, transTy(tenv, tmp->head->typ)), NULL);
+                tmp = tmp->tail;
+                while(tmp){
+                    structure = Ty_FieldList(Ty_Field(tmp->head->name, transTy(tenv, tmp->head->typ)), structure);
+                    tmp = tmp->tail;
+                }
+                struct_ty->u.structt.structure = structure;
+            }
+            else
+                struct_ty->u.structt.structure = NULL;
+            return Tr_StructDec();
+        }
+}
 }
 assert(0);
 }
+
 
 Ty_ty transTy(S_table tenv, A_ty ty)
 {
     switch(ty->kind)
     {
-        case A_nameTy :
+    case A_nameTy:
         {
             if(S_Symbol("int") == ty->u.name)
             {
                 return Ty_Int();
             }
+            if(S_Symbol("char") == ty->u.name)
+            {
+                return Ty_Char();
+            }
+            if(S_Symbol("float") == ty->u.name)
+            {
+                return Ty_Float();
+            }
+            if(S_Symbol("void") == ty->u.name)
+            {
+                return Ty_Void();
+            }
             if(S_Symbol("string") == ty->u.name)
             {
                 return Ty_String();
             }
-            Ty_ty tmp =(Ty_ty)S_look(tenv, ty->u.name);
+            assert(0);
+        }
+    case A_structTy:
+        {
+            Ty_ty tmp;
+            if(innerIdentifiers(ty->u.name))
+            {
+                assert(0);
+            }
+            tmp = (Ty_ty)S_look(tenv, ty->u.name);
             if(tmp == NULL)
             {
                 assert(0);
             }
-            return Ty_Name(ty->u.name, tmp);
+            return tmp;
         }
-        case A_recordTy :
+    case A_arrayTy:
         {
-            A_fieldList tmpfeldList = ty->u.record;
-            Ty_fieldList tyfdlist = NULL; 
-            while(tmpfeldList)
-            {
-                Ty_ty  tmp =(Ty_ty)S_look(tenv, tmpfeldList->head->typ);
-                if(tmp == NULL)
-                {
-                    assert(0);
-                }
-                if(innerIdentifiers(tmpfeldList->head->name))
-                {
-                    assert(0);
-                }
-                tyfdlist = Ty_FieldList(Ty_Field(tmpfeldList->head->name, tmp), tyfdlist);
-                tmpfeldList = tmpfeldList->tail;
-            }
-            return Ty_Record(tyfdlist);
-        }
-        case A_arrayTy :
-        {
-            Ty_ty tmp  =(Ty_ty)S_look(tenv, ty->u.array);
-            if(tmp == NULL)
+            Ty_ty tar = transTy(tenv, ty->u.array.tar);
+            if(tar == NULL)
             {
                 assert(0);
             }
-            return Ty_Array(tmp);
+            return Ty_Array(tar, ty->u.array.length);
         }
     }
     assert(0);
@@ -457,9 +486,9 @@ Ty_ty transTy(S_table tenv, A_ty ty)
 
 bool innerIdentifiers(S_symbol sym)
 {
-    if(sym == S_Symbol("int") || sym == S_Symbol("string"))
+    if(sym == S_Symbol("int") || sym == S_Symbol("string") || sym == S_Symbol("char") || sym == S_Symbol("float") || sym == S_Symbol("void"))
     {
-        return true;
+        return TRUE;
     }
-    return false;
+    return FALSE;
 }
