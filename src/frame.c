@@ -88,6 +88,15 @@ F_accesslist F_Accesslist(F_access head , F_accesslist tail)
     return tmp;
 }
 
+T_exp F_AddressExp(F_access acc, T_exp framePtr)
+{
+    if(acc->kind == inFrame)
+    {
+        return T_Binop(T_plus, framePtr, T_Const(acc->u.offset));
+    }
+    return NULL;
+}
+
 T_exp F_Exp(F_access acc, T_exp framePtr)
 {
     if (acc->kind == F_access_::inFrame )

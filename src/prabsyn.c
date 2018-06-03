@@ -187,7 +187,7 @@ void pr_exp(FILE *out, A_exp v, int d) {
 	case A_switchExp:
 		fprintf(out, "switchExp(\n");
 		pr_exp(out, v->u.switchh.test, d+1); fprintf(out, ",\n");
-		pr_exp(out, v->u.switchh.body, d+1); fprintf(out, ")");
+		pr_expList(out, v->u.switchh.bodyList, d+1); fprintf(out, ")");
 		break;
 	case A_returnExp:
 		fprintf(out, "returnExp(");
@@ -216,7 +216,11 @@ static void pr_var(FILE *out, A_var v, int d) {
 	case A_subscriptVar:
 		fprintf(out, "%s\n", "subscriptVar(");
 		pr_var(out, v->u.subscript.var, d+1); fprintf(out, ",\n"); 
-		pr_exp(out, v->u.subscript.exp, d+1); fprintf(out, "%s", ")");
+		pr_exp(out, v->u.subscript.exp, d+1); fprintf(out, ")");
+		break;
+	case A_addressVar:
+		fprintf(out, "%s\n", "addressVar(");
+		pr_var(out, v->u.address, d+1); fprintf(out, ")"); 
 		break;
 	default:
 		assert(0); 

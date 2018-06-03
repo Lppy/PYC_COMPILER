@@ -15,7 +15,7 @@ typedef struct A_fieldList_ *A_fieldList;
 typedef struct A_efield_ *A_efield;
 typedef struct A_efieldList_ *A_efieldList;
 
-typedef enum {A_ptrOp, A_adrOp, A_notOp, A_bnotOp} A_unoper;
+typedef enum {A_notOp, A_bnotOp} A_unoper; //A_ptrOp, A_adrOp, 
 
 typedef enum {A_plusOp, A_minusOp, A_timesOp, A_divideOp, A_modOp, 
 				A_leftOp, A_rightOp, A_andOp, A_eorOp, A_orOp, A_landOp, 
@@ -23,12 +23,13 @@ typedef enum {A_plusOp, A_minusOp, A_timesOp, A_divideOp, A_modOp,
 				A_eqOp, A_neqOp, A_ltOp, A_leOp, A_gtOp, A_geOp} A_oper;
 
 struct A_var_ {
-	enum {A_simpleVar, A_fieldVar, A_subscriptVar} kind;
+	enum {A_simpleVar, A_fieldVar, A_subscriptVar, A_addressVar} kind;
 	A_pos pos;
 	union {
 		S_symbol simple;
 		struct {A_var var; S_symbol sym;} field;
 		struct {A_var var; A_exp exp;} subscript;
+		A_var address;
 	} u;
 };
 
@@ -57,7 +58,7 @@ struct A_exp_ {
 		struct {A_exp e1, e2, e3, body;} forr;
 		struct {A_decList decs; A_exp body;} let;
 		struct {A_exp constant, body;} casee;
-		struct {A_exp test, body;} switchh;
+		struct {A_exp test; A_expList bodyList;} switchh;
 		struct {A_exp res;} returnn;
 	} u;
 };
@@ -97,7 +98,7 @@ struct A_efieldList_ {A_efield head; A_efieldList tail;};
 A_var A_SimpleVar(A_pos pos, S_symbol sym);
 A_var A_FieldVar(A_pos pos, A_var var, S_symbol sym);
 A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp);
-
+A_var A_AddressVar(A_pos pos, A_var var);
 
 A_exp A_VarExp(A_pos pos, A_var var);
 A_exp A_NilExp(A_pos pos);
@@ -118,7 +119,7 @@ A_exp A_BreakExp(A_pos pos);
 A_exp A_ContinueExp(A_pos pos);
 A_exp A_LetExp(A_pos pos, A_decList decs, A_exp body);
 A_exp A_CaseExp(A_pos pos, A_exp constant, A_exp body);
-A_exp A_SwitchExp(A_pos pos, A_exp test, A_exp body);
+A_exp A_SwitchExp(A_pos pos, A_exp test, A_expList body);//
 A_exp A_ReturnExp(A_pos pos, A_exp res);
 
 //function declaration 第一个参数在链表尾部

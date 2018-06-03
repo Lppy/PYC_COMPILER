@@ -49,8 +49,8 @@ A_decList PARSE_RES;
 %token STRUCT
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR CONTINUE BREAK RETURN
 
-%type<expList> argument_expression_list expression statement_list
-%type<exp> primary_expression postfix_expression unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression logical_or_expression conditional_expression assignment_expression initializer constant_expression compound_statement statement labeled_statement expression_statement selection_statement iteration_statement jump_statement 
+%type<expList> argument_expression_list expression statement_list labeled_statement_list
+%type<exp> primary_expression postfix_expression unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression logical_or_expression conditional_expression assignment_expression initializer constant_expression compound_statement statement expression_statement selection_statement iteration_statement jump_statement 
 %type<var> postfix_var unary_var
 %type<efield> init_declarator
 %type<efieldList> init_declarator_list
@@ -103,13 +103,13 @@ postfix_var
 unary_var
         : postfix_var {$$=$1;}
         | '*' unary_var {$$=A_SubscriptVar(pos,$2,A_IntExp(pos, 0));}
+        | '&' unary_var {$$=A_AddressVar(pos, $2);}
         ;
 
 //---A_exp
 unary_expression
         : unary_var {$$ = A_VarExp(pos, $1);}
         | postfix_expression {$$ = $1;}
-        | '&' unary_expression {$$ = A_UnaryExp(pos, A_adrOp, $2);}
         | '~' unary_expression {$$ = A_UnaryExp(pos, A_bnotOp, $2);}
         | '!' unary_expression {$$ = A_UnaryExp(pos, A_notOp, $2);}
         ;
@@ -322,8 +322,8 @@ statement_list
 
 //---A_exp
 statement
-        : labeled_statement {$$=$1;}
-        | compound_statement {$$=$1;}
+        //: labeled_statement {$$=$1;}
+        : compound_statement {$$=$1;}
         | expression_statement {$$=$1;}
         | selection_statement {$$=$1;}
         | iteration_statement {$$=$1;}
@@ -331,6 +331,7 @@ statement
         | error {parse_error("illegal statement");} statement {$$=$3;}
         ;
 
+/*
 //---A_exp
 labeled_statement
         : CASE constant_expression ':' statement {$$=A_CaseExp(pos,$4,$2);}
@@ -338,6 +339,7 @@ labeled_statement
         | CASE constant_expression error {parse_error("unexpected ':'");} statement 
         | DEFAULT error {parse_error("unexpected ':'");} statement
         ;
+*/
 
 //---A_exp
 expression_statement
@@ -349,7 +351,14 @@ expression_statement
 selection_statement
         : IF '(' expression ')' statement {$$=A_IfExp(pos,A_SeqExp(pos,$3),$5,null);}
         | IF '(' expression ')' statement ELSE statement {$$=A_IfExp(pos,A_SeqExp(pos,$3),$5,$7);}
-        | SWITCH '(' expression ')' statement {$$=A_SwitchExp(pos,A_SeqExp(pos,$3),$5);}
+        | SWITCH '(' expression ')' '{' labeled_statement_list '}' {$$=A_SwitchExp(pos,A_SeqExp(pos,$3),$6);} //
+        ;
+
+//---A_expList//
+labeled_statement_list
+        : CASE constant_expression ':' statement labeled_statement_list {$$=A_ExpList(A_CaseExp(pos,$2,$4),$5);}
+        | DEFAULT ':' statement {$$=A_ExpList(A_CaseExp(pos,null,$3),NULL);}
+        | CASE constant_expression ':' statement {$$=A_ExpList(A_CaseExp(pos,$2,$4),NULL);}
         ;
 
 //---A_exp

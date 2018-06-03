@@ -31,6 +31,14 @@ A_var A_SubscriptVar(A_pos pos, A_var var, A_exp exp)
 	return p;
 }
 
+A_var A_AddressVar(A_pos pos, A_var var)
+{
+	A_var p = checked_malloc(sizeof(*p));
+	p->kind=A_addressVar;
+	p->pos=pos;
+	p->u.address=var;
+	return p;
+}
 
 A_exp A_VarExp(A_pos pos, A_var var)
 {
@@ -215,13 +223,13 @@ A_exp A_CaseExp(A_pos pos, A_exp constant, A_exp body)
 	return p;
 }
 
-A_exp A_SwitchExp(A_pos pos, A_exp test, A_exp body)
+A_exp A_SwitchExp(A_pos pos, A_exp test, A_expList body)
 {
 	A_exp p = checked_malloc(sizeof(*p));
 	p->kind=A_switchExp;
 	p->pos=pos;
 	p->u.switchh.test=test;
-	p->u.switchh.body=body;
+	p->u.switchh.bodyList=body;
 	return p;
 }
 
