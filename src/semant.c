@@ -258,7 +258,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
         {
             E_enventry tmp =(E_enventry)S_look(venv, var->u.simple);
             if(tmp != NULL && tmp->kind == E_varEntry)
-                return expTy(Tr_simpleVar(tmp->u.var.access, level), pointedTy(tmp->u.var.ty)); //?????????????
+                return expTy(Tr_simpleVar(tmp->u.var.acc, level), pointedTy(tmp->u.var.ty)); //?????????????
             else if(tmp == NULL)
                 type_error(var->pos, "variable not defined");
             else
