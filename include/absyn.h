@@ -37,7 +37,7 @@ struct A_exp_ {
 	enum {
 		A_varExp, A_nilExp, A_intExp, A_charExp, A_floatExp, A_stringExp, A_callExp, A_conExp,
 		A_opExp, A_unaryExp, A_seqExp, A_assignExp, A_ifExp,
-		A_whileExp, A_forExp, A_breakExp, A_continueExp, A_letExp, A_arrayExp,
+		A_whileExp, A_forExp, A_breakExp, A_continueExp, A_letExp, //A_arrayExp,
 		A_caseExp, A_switchExp, A_returnExp 
 	} kind;
     A_pos pos;
@@ -62,7 +62,6 @@ struct A_exp_ {
 		struct {A_exp res;} returnn;
 	} u;
 };
-
 struct A_dec_ {
 	enum {A_functionDec, A_varDec, A_structDec} kind;
     A_pos pos;
