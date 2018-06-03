@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include "util.h"
 #include "symbol.h" /* symbol table data structures */
 #include "absyn.h"  /* abstract syntax data structures */

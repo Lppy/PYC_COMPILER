@@ -28,7 +28,7 @@ Tr_level Tr_newLevel(Tr_level parent, Temp_label name, U_boolList formals)
 {
     Tr_level level = (Tr_level)checked_malloc(sizeof(*level));
     level->parent = parent;
-    level->frame = F_newframe(name, U_BoolList(true, formals));
+    level->frame = F_newframe(name, U_BoolList(TRUE, formals));
     return level;
 }
 
@@ -51,7 +51,7 @@ Tr_level Tr_outermorst()
     if (!tmp)
     {
         tmp = (Tr_level)checked_malloc(sizeof(*tmp));
-        U_boolList b = U_BoolList(true, NULL);
+        U_boolList b = U_BoolList(TRUE, NULL);
         tmp->frame = F_newframe(Temp_newlabel(), b);
         tmp->parent = NULL;
     }
@@ -304,9 +304,9 @@ Tr_exp Tr_relopExp(Tr_exp left, Tr_exp right, A_oper oper)
     switch(oper)
     {
     case A_landOp:
-        return Tr_ex(T_BinOp(T_and, Tr_unEx(left), Tr_unEx(right)));
+        return Tr_Ex(T_BinOp(T_and, Tr_unEx(left), Tr_unEx(right)));
     case A_lorOp:
-        return Tr_ex(T_BinOp(T_or, Tr_unEx(left), Tr_unEx(right)));
+        return Tr_Ex(T_BinOp(T_or, Tr_unEx(left), Tr_unEx(right)));
     case A_ltOp:
         op = T_lt;
         break;
@@ -339,9 +339,9 @@ Tr_exp Tr_unaryopExp(Tr_exp exp, A_unoper unoper)
     switch(unoper)
     {
     case A_notOp:
-        return Tr_ex(T_BinOp(T_xor, T_Const(1), Tr_unEx(exp)));
+        return Tr_Ex(T_BinOp(T_xor, T_Const(1), Tr_unEx(exp)));
     case A_bnotOp:
-        return Tr_ex(T_BinOp(T_xor, T_Const(), Tr_unEx(exp)));
+        return Tr_Ex(T_BinOp(T_xor, T_Const(0xffffffff), Tr_unEx(exp)));
     default:
         return NULL;
     }

@@ -79,7 +79,7 @@ Tr_exp Tr_returnExp(Tr_exp res); //F_RA()
 
 Tr_exp Tr_callExp(Temp_label label, Tr_level funlevel, Tr_level level, Tr_expList args);
 
-Tr_exp Tr_varDec(Tr_accessList accList, Tr_expList initList);
+Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList);
 Tr_exp Tr_structDec();
 Tr_exp Tr_funDec(Tr_exp body);
 
