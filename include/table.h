@@ -3,18 +3,18 @@
 
 #define TABSIZE 127
 
-typedef struct TAB_table_ *TAB_table;
-struct TAB_table_ {
-	binder table[TABSIZE];
-	void *top;
-};
-
 typedef struct binder_ *binder;
 struct binder_ {
     void *key; 
     void *value; 
     binder next; 
     void *prevtop;
+};
+
+typedef struct TAB_table_ *TAB_table;
+struct TAB_table_ {
+	binder table[TABSIZE];
+	void *top;
 };
 
 /* Make a new table mapping "keys" to "values". */

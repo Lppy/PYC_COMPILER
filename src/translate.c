@@ -304,9 +304,9 @@ Tr_exp Tr_relopExp(Tr_exp left, Tr_exp right, A_oper oper)
     switch(oper)
     {
     case A_landOp:
-        return Tr_Ex(T_BinOp(T_and, Tr_unEx(left), Tr_unEx(right)));
+        return Tr_Ex(T_Binop(T_and, Tr_unEx(left), Tr_unEx(right)));
     case A_lorOp:
-        return Tr_Ex(T_BinOp(T_or, Tr_unEx(left), Tr_unEx(right)));
+        return Tr_Ex(T_Binop(T_or, Tr_unEx(left), Tr_unEx(right)));
     case A_ltOp:
         op = T_lt;
         break;
@@ -339,9 +339,9 @@ Tr_exp Tr_unaryopExp(Tr_exp exp, A_unoper unoper)
     switch(unoper)
     {
     case A_notOp:
-        return Tr_Ex(T_BinOp(T_xor, T_Const(1), Tr_unEx(exp)));
+        return Tr_Ex(T_Binop(T_xor, T_Const(1), Tr_unEx(exp)));
     case A_bnotOp:
-        return Tr_Ex(T_BinOp(T_xor, T_Const(0xffffffff), Tr_unEx(exp)));
+        return Tr_Ex(T_Binop(T_xor, T_Const(0xffffffff), Tr_unEx(exp)));
     default:
         return NULL;
     }
@@ -498,7 +498,7 @@ Tr_exp Tr_forExp(Tr_exp e1, Tr_exp e2, Tr_exp e3, Tr_exp body)
     doPatch(ctest.falses, done);
     doPatch(ctest.trues, notdone);
     stm = T_Seq(T_Label(notdone), T_Seq(Tr_unNx(body), T_Seq(Tr_unNx(e3), T_Jump(T_Name(testlabel), Temp_LabelList(testlabel, NULL)))));
-    stm = T_Seq(T_unNx(e1), T_Seq(T_Label(testlabel), T_Seq(ctest.stm, T_Seq(stm, T_Label(done)))));
+    stm = T_Seq(Tr_unNx(e1), T_Seq(T_Label(testlabel), T_Seq(ctest.stm, T_Seq(stm, T_Label(done)))));
     return Tr_Nx(stm);
 }
 
@@ -538,11 +538,17 @@ Tr_exp Tr_switchExp(Tr_expList bodyList)
 Tr_exp Tr_returnExp(Tr_exp res)
 {
     T_exp tmp = T_Temp(F_RV());
+    /*
     Temp_label label = F_RA();
     if(res)
         return Tr_unNx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Jump(T_Name(label), Temp_LabelList(label, NULL))));
     else
         return Tr_unNx(T_Jump(T_Name(label), Temp_LabelList(label, NULL)));
+    */
+    if(res)
+        return Tr_unNx(T_Move(tmp, Tr_unEx(res)));
+    else
+        return Tr_unNx(T_Const(0));
 }
 
 Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)

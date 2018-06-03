@@ -11,13 +11,13 @@ struct E_enventry_ {
     enum { E_varEntry, E_funEntry } kind;
     union
     {
-        struct { Ty_ty ty; Tr_access acc; } var;//
-        struct { Ty_tyList formals; Ty_ty result; Temp_label label; Tr_level level; } fun;//
+        struct { Ty_ty ty; Tr_access acc; } var;
+        struct { Ty_tyList formals; Ty_ty result; Temp_label label; Tr_level level; } fun;
     } u;
 };
 
 E_enventry E_VarEntry(Tr_access acc, Ty_ty ty);
-E_enventry E_FunEntry(Ty_tyList formals, Ty_ty reslut);
+E_enventry E_FunEntry(Ty_tyList formals, Ty_ty reslut, Temp_label label, Tr_level level);
 
 S_table E_base_tenv();
 S_table E_base_venv();

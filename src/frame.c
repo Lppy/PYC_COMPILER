@@ -1,6 +1,7 @@
 #include "frame.h"
 
 const int offset = -4;
+const int F_wordSize = 4;
 
 static Temp_temp fp = NULL;
 Temp_temp F_FP()

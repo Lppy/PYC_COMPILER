@@ -5,6 +5,17 @@
 #include "temp.h"
 
 typedef struct T_const_ *T_const;
+typedef struct T_stm_ *T_stm;
+typedef struct T_stmList_ *T_stmList;
+typedef struct T_exp_ *T_exp;
+typedef struct T_expList_ *T_expList;
+
+typedef enum {T_plus, T_minus, T_mul, T_div, T_mod,
+    T_and, T_or, T_lshift, T_rshift, T_arshift, T_xor} T_binOp;
+
+typedef enum  {T_eq, T_ne, T_lt, T_gt, T_le, T_ge,
+    T_ult, T_ule, T_ugt, T_uge} T_relOp;
+
 struct T_const_{
 	enum {T_INT, T_FLOAT, T_CHAR} kind;
 	union {
@@ -14,7 +25,6 @@ struct T_const_{
 	} u;
 };
 
-typedef struct T_stm_ *T_stm;
 struct T_stm_ {
 	enum {T_SEQ, T_LABEL, T_JUMP, T_CJUMP, T_MOVE, T_EXP} kind;
 	union {
@@ -27,10 +37,8 @@ struct T_stm_ {
 	} u;
 };
 
-typedef struct T_stmList_ *T_stmList;
 struct T_stmList_ {T_stm head; T_stmList tail;};
 
-typedef struct T_exp_ *T_exp;
 struct T_exp_ {
 	enum {T_BINOP, T_MEM, T_TEMP, T_ESEQ, T_NAME, T_CONST, T_CALL} kind;
 	union {
@@ -44,14 +52,9 @@ struct T_exp_ {
 	} u;
 };
 
-typedef struct T_expList_ *T_expList;
 struct T_expList_ {T_exp head; T_expList tail;};
 
-typedef enum {T_plus, T_minus, T_mul, T_div, T_mod,
-    T_and, T_or, T_lshift, T_rshift, T_arshift, T_xor} T_binOp;
 
-typedef enum  {T_eq, T_ne, T_lt, T_gt, T_le, T_ge,
-    T_ult, T_ule, T_ugt, T_uge} T_relOp;
 
 T_expList T_ExpList(T_exp head, T_expList tail);
 T_stmList T_StmList(T_stm head, T_stmList tail);

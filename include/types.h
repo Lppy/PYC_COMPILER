@@ -1,6 +1,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include "symbol.h"
+
 typedef struct Ty_ty_ *Ty_ty;
 typedef struct Ty_tyList_ *Ty_tyList;
 typedef struct Ty_field_ *Ty_field;

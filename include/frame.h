@@ -5,8 +5,12 @@
 #include "temp.h"
 #include "tree.h"
 
-extern const int F_wordSize = 4 ;
-typedef struct F_frame_ *F_frame ;
+typedef struct F_frame_ *F_frame;
+typedef struct F_access_ *F_access;
+typedef struct F_accesslist_ *F_accesslist;
+typedef struct F_frag_ *F_frag;
+typedef struct F_fragList_ *F_fragList;
+
 struct F_frame_ { 
     Temp_label name; 
     int framesize;
@@ -14,7 +18,6 @@ struct F_frame_ {
     F_accesslist locals; 
 };
 
-typedef struct F_access_ *F_access;
 struct F_access_ {
     enum { inFrame, inReg } kind;
     union{
@@ -23,10 +26,8 @@ struct F_access_ {
     } u;
 };
 
-typedef struct F_accesslist_ *F_accesslist ;
 struct F_accesslist_ { F_access head; F_accesslist tail; };
 
-typedef struct F_frag_ *F_frag ;
 struct F_frag_ {
     enum { F_stringFrag, F_procFrag } kind ;
     union {
@@ -35,7 +36,6 @@ struct F_frag_ {
     } u;
 };
 
-typedef struct F_fragList_ *F_fragList ;
 struct F_fragList_{  F_frag head; F_fragList tail; };
 
 F_frag F_StringFrag(Temp_label label, string str);

@@ -6,18 +6,23 @@
 #include "absyn.h"
 #include "tree.h"
   
+extern const int F_wordSize;
+
 typedef struct Tr_access_ *Tr_access;  
+typedef struct Tr_accesslist_ *Tr_accesslist;
+typedef struct Tr_level_ *Tr_level;
+typedef struct Tr_exp_*Tr_exp;
+typedef struct Tr_expList_ *Tr_expList;
+typedef struct patchList_ *patchList;
+
 struct  Tr_access_ { Tr_level level; F_access access; };
 
-typedef struct Tr_accesslist_ *Tr_accesslist ;
 struct  Tr_accesslist_ { Tr_access head; Tr_accesslist tail; };
 
-typedef struct Tr_level_ *Tr_level ;
 struct  Tr_level_ { Tr_level parent; F_frame frame; };
 
 struct Cx { patchList trues; patchList falses; T_stm stm; };
 
-typedef struct Tr_exp_*Tr_exp;
 struct Tr_exp_
 {
     enum { Tr_ex, Tr_nx, Tr_cx } kind;
@@ -28,10 +33,8 @@ struct Tr_exp_
     } u;
 };
 
-typedef struct Tr_expList_ *Tr_expList;
 struct Tr_expList_ { Tr_exp head; Tr_expList tail; };
 
-typedef struct patchList_ *patchList;
 struct patchList_ { Temp_label *head; patchList tail; };
 
 
