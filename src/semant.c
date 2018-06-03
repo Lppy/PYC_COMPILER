@@ -303,9 +303,6 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
         Tr_ClearAcces(tr_acceselist);
         S_endScope(venv);
         return Tr_funDec(tmp.exp);
-// struct {A_efieldList varList; A_ty typ; bool escape;} var;
-// struct A_efield_ {S_symbol name; A_exp exp;};
-// struct A_efieldList_ {A_efield head; A_efieldList tail;};
     case A_varDec:
         A_efieldList vars = dec->u.var.varList;
         Tr_expList initList = NULL;
@@ -323,82 +320,6 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             vars=vars->tail;
         }
         return Tr_varDec(accList, initList);
-
-case A_typeDec :
-{
-    A_nametyList namelist = dec->u.type;
-    while(namelist)
-    {
-        if(innerIdentifiers(namelist->head->name))
-        {
-            assert(0);
-        }
-// ¥¶¿Ìµ›πÈ ¿‡À?”⁄ …?√˜“ª∏ˆ¿‡–Õ µ´ «ªπ√ª”–∂®“ÂÀ¸
-        S_enter(tenv, namelist->head->name ,Ty_Name(namelist->head->name, NULL));
-        namelist = namelist->tail;
-    }
-    namelist = dec->u.type;
-    while(namelist)
-    {
-// ¥¶¿Ìµ›πÈ
-        Ty_ty tmp1 = transTy(tenv, namelist->head->ty);
-        Ty_ty tmp2 =(Ty_ty)S_look(tenv, namelist->head->name);
-
-        if(  tmp1->kind == Ty_ty_::Ty_int 
-            || tmp1->kind == Ty_ty_::Ty_string 
-            || tmp1->kind == Ty_ty_::Ty_nil
-            || tmp1->kind == Ty_ty_::Ty_void)
-        {
-//ƒ⁄÷√¿‡–Õ π”√µƒ «Õ¨“ª«¯”Úƒ⁄¥Ê Œ™¡À±£≥÷ø…“‘æ≠––÷∏’Îµƒ±»ΩœæÕ÷±Ω”»∑∂® «∑ÒŒ™Õ¨“ª∏ˆ¿‡–Õ ƒ«√¥æÕ“™÷±Ω”∞—∞Û∂®∏¯ªª¡À
-            tmp2 =(Ty_ty)S_changeBind(tenv, namelist->head->name, tmp1);
-            tmp2 =(Ty_ty)freeTy(tmp2);
-        }
-        else
-        {
-//»Áπ?≤ª «’‚Àƒ÷÷ƒ⁄÷√¿‡–Õ “™œ˙ªŸ 
-            tyCpy(tmp2, tmp1);
-            tmp1 =(Ty_ty)freeTy(tmp1);
-        }
-        namelist = namelist->tail;
-    }
-    namelist = dec->u.type;
-    while(namelist)
-{  // ¥¶¿Ì —≠ª∑µ›πÈ  ¿?»Á  type a = b  type b = a 
-    Ty_ty tmp =(Ty_ty)S_look(tenv, namelist->head->name);
-    if(!pointedTy(tmp))
-    {
-        assert(0);
-    }
-    namelist = namelist->tail;
-}
-return Tr_typeDec();
-}
-<<<<<<< HEAD
-case A_varDec :
-{
-    if(dec->u.var.init == NULL)
-    {
-        assert(0);
-    }
-    expty tmp = transExp(venv, tenv, dec->u.var.init, level);
-    if((dec->u.var.typ != NULL))
-    {
-        if(pointedTy((Ty_ty)S_look(tenv ,dec->u.var.typ)) != tmp.ty)
-        {
-            assert(0);
-        }
-    }
-    if(innerIdentifiers(dec->u.var.var))
-    {
-        assert(0);
-    }
-    Tr_access acc = Tr_allocLocal(level, dec->u.var.escape);
-    S_enter(venv, dec->u.var.var ,E_VarEntry(acc ,tmp.ty));
-    return Tr_varDec(acc, tmp.exp);
-}    
-
-
-{
     case A_structDec:
         {
             Ty_ty struct_ty; 
@@ -422,12 +343,9 @@ case A_varDec :
                 struct_ty->u.structt.structure = NULL;
             return Tr_StructDec();
         }
-}
-}
-=======
-    
->>>>>>> ac4039dacd13e661a9ade6820ef4414a535e83c1
-assert(0);
+
+    }
+    assert(0);
 }
 
 
