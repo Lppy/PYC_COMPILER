@@ -196,21 +196,34 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         S_endScope(venv);
         S_endScope(tenv);
         return tmp;
-    case A_switchExp: //unfinished flag
+// Tr_exp Tr_caseExp(Tr_exp test, Tr_exp constant, Tr_exp body);
+// Tr_exp Tr_switchExp(Tr_expList bodyList);
+    case A_switchExp:{ //unfinished flag
         expty tmptest = transExp(venv, tenv, exp->u.switchh.test, level);
-        expty tmpbody = transExp(venv, tenv, exp->u.switchh.body, level);
+        A_expList body = exp->u.switchh.bodyList;
+        Tr_expList bodylist = NULL;
         if(tmptest.ty != Ty_int || tmptest.ty != Ty_char)
             type_error(exp->pos, "only char or int are allowed to be switched");
-        return expTy(Tr_switchExp(tmptest.exp, tmpbdy.exp), Ty_Void());
-    case A_caseExp:
+        while(body){
+            struct expty part = transExp(venv, tenv, body->head, level);
+            if(!isTyequTy(Ty_Void()), part.ty)
+                type_error(exp->pos, "something wrong with switch");
+            bodylist = Tr_ExpList(part.exp, bodylist);
+            body = body->tail;
+        }
+        return expTy(Tr_switchExp(bodylist), Ty_Void());
+    }
+    case A_caseExp:{
         expty tmpcon = transExp(venv, tenv, exp->u.casee.constant, level);
         expty tmpbody = transExp(venv, tenv, exp->u.casee.body, level);
         if(tmpcon.ty != Ty_int || tmpcon.ty != Ty_char)
             type_error(exp->pos, "only char or int are allowed to be as cases");
         return expTy(Tr_caseExp(tmpcon.exp, tmpbody.exp), Ty_Void());
-    case A_returnExp:
+    }
+    case A_returnExp:{
         tmp = transExp(venv, tenv, exp->u.returnn, level);
         tmp = expTy(Tr_returnExp(tmp), tmp.ty);
+    }
     default: assert(0);
     }
 }
