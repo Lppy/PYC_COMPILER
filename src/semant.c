@@ -228,27 +228,28 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             S_endScope(tenv);
             return tmp;
         }
-    case A_switchExp: //unfinished flag
+    case A_switchExp:
         {
             struct expty tmptest = transExp(venv, tenv, exp->u.switchh.test, level);
-            struct expty tmpbody = transExp(venv, tenv, exp->u.switchh.bodyList, level);
-            if(tmptest.ty != Ty_int || tmptest.ty != Ty_char)
+            A_expList body = exp->u.switchh.bodyList;
+            Tr_expList bodylist = NULL;
+            if(tmptest.ty.kind != Ty_int || tmptest.ty.kind != Ty_char)
                 type_error(exp->pos, "only char or int are allowed to be switched");
-            return expTy(Tr_switchExp(tmptest.exp, tmpbody.exp), Ty_Void());
+            while(body){
+                struct expty tmpcon = transExp(venv, tenv, body->head->u.casee.constant, level);
+                struct expty tmpbody = transExp(venv, tenv, body->head->u.casee.body, level);
+                if(tmpcon.ty.kind != Ty_int && tmpcon.ty.kind != Ty_char)
+                    type_error(exp->pos, "only char or int are allowed to be as cases");
+                bodylist = Tr_ExpList(Tr_caseExp(tmptest.exp, tmpcon.exp, tmpbody.exp), bodylist);
+                body = body->tail;
+            }
+            return expTy(Tr_switchExp(bodylist), Ty_Void());
         }
-    case A_caseExp:
-        {
-            struct expty tmpcon = transExp(venv, tenv, exp->u.casee.constant, level);
-            struct expty tmpbody = transExp(venv, tenv, exp->u.casee.body, level);
-            if(tmpcon.ty != Ty_int || tmpcon.ty != Ty_char)
-                type_error(exp->pos, "only char or int are allowed to be as cases");
-            return expTy(Tr_caseExp(tmpcon.exp, tmpbody.exp), Ty_Void());
+    case A_returnExp:{
+            struct expty tmp = transExp(venv, tenv, exp->u.returnn, level);
+            tmp = expTy(Tr_returnExp(tmp), tmp.ty);
         }
-    case A_returnExp:
-        tmp = transExp(venv, tenv, exp->u.returnn.res, level);
-        tmp = expTy(Tr_returnExp(tmp), tmp.ty);
-    default: 
-        assert(0);
+    default: assert(0);
     }
 }
 
@@ -314,9 +315,8 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             struct expty tmp;
 
             while(para){
-                Ty_ty ty = (Ty_ty)S_look(tenv, para->head->typ);
-                if(!ty) 
-                    // if(!innerTypes) possible unfinished flag
+                Ty_ty ty = transTy(tenv, para->head->typ);
+                if(!ty)
                     type_error(dec->pos, "unknown type: %s", S_name(para->head->name));
                 tylist = Ty_TyList(ty, tylist);
                 para = para->tail;
@@ -325,7 +325,8 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             if(innerIdentifiers(name))
                 type_error(dec->pos, "cannot use inner type as function name");
             newlevel = Tr_newLevel(level, Temp_newlabel(), boollist);
-            res = (Ty_ty)S_look(tenv, result);
+            // res = (Ty_ty)S_look(tenv, result);
+            res = transTy(tenv, result);
             if(!res)
                 type_error(dec->pos, "unknown return type");
             funEntry = E_FunEntry(newlevel, newlevel->frame->name, tylist, res);
@@ -336,7 +337,8 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             tmpacclist = tr_acceselist = Tr_formals(funEntry->u.fun.level);
             para = dec->u.function.params;
             while(para){
-                Ty_ty ty =(Ty_ty)S_look(tenv, para->head->typ);
+                // Ty_ty ty =(Ty_ty)S_look(tenv, para->head->typ);
+                Ty_ty ty = transTy(tenv, para->head->typ);
                 S_enter(venv, S_Symbol(name), E_VarEntry(tmpacclist->head, ty));
                 para = para->tail;
                 tmpacclist = tmpacclist->tail;
