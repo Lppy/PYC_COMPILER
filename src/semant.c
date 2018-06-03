@@ -28,7 +28,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
     case A_callExp:
         E_enventry tmp =(E_enventry)S_look(venv, exp->u.call.func);
         if(tmp == NULL)
-            type_error(exp->pos, "function %s undeclared", exp->u.call.func);
+            type_error(exp->pos, "function %s undeclared", S_name(exp->u.call.func));
         Ty_tyList tylist  = tmp->u.fun.formals;
         A_expList explist = exp->u.call.args;
         Tr_expList trexplist = NULL;
@@ -99,7 +99,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             if(tmp.ty->kind != Ty_array)
                 type_error(exp->pos, "not a pointer type");
             return expT(Tr_unaryopExp(tmp.exp, exp->u.unary.oper), tmp.ty->u.array.ty);
-        case A_adrOp:
+        case A_adrOp://unfinished flag
             return expT(Tr_unaryopExp(tmp.exp, exp->u.unary.oper), Ty_Int());
         case A_notOp:// suppose after not the type is int
             if(!Ty_IsNum(tmp.ty->kind))
@@ -196,7 +196,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         S_endScope(venv);
         S_endScope(tenv);
         return tmp;
-    case A_switchExp:
+    case A_switchExp: //unfinished flag
         expty tmptest = transExp(venv, tenv, exp->u.switchh.test, level);
         expty tmpbody = transExp(venv, tenv, exp->u.switchh.body, level);
         if(tmptest.ty != Ty_int || tmptest.ty != Ty_char)
@@ -210,13 +210,12 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         return expTy(Tr_caseExp(tmpcon.exp, tmpbody.exp), Ty_Void());
     case A_returnExp:
         tmp = transExp(venv, tenv, exp->u.returnn, level);
-        tmp = expTy(Tr_returnExp(tmp), Ty_Void());
-        //return value type uncheckded
+        tmp = expTy(Tr_returnExp(tmp), tmp.ty);
     default: assert(0);
     }
 }
 
-expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level){
+expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
     switch(var->kind){
     case A_simpleVar:
         E_enventry tmp =(E_enventry)S_look(venv, var->u.simple);
@@ -238,7 +237,7 @@ expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level){
             num++;
             fieldList = fieldList->tail;
         }
-        type_error(var->pos, "structure %s, does not have such a component", S_name(var->u.field.var->u.simple);
+        type_error(var->pos, "structure %s, does not have such a component", S_name(var->u.field.var->u.simple));
     case A_subscriptVar:
         expty tmpvar = transVar(venv, tenv, var->u.subscript.var, level);
         expty tmpexp = transExp(venv, tenv, var->u.subscript.exp, level);
@@ -247,85 +246,84 @@ expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level){
         if(tmpexp.ty->kind != Ty_int || tmpexp.ty->kind != Ty_char)
             type_error(var->pos, "the index is not integer");
         return expTy(Tr_subscriptVar(tmpvar.exp ,tmpexp.exp), tmpvar.ty);
-    default: assert(0);
+    default: 
+        assert(0);
     }
 }
 
-Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level)
-{
-    switch(dec->kind)
-    {
-        case A_functionDec :
-        {
-            A_fundecList tmpfun = dec->u.function;
-            Tr_level newlevel;
-            Tr_access acce;
-            U_boolList boollist = NULL;
-            Ty_ty reslut = NULL;
-            while(tmpfun)
-            {
-                A_fieldList tmpfeldList = tmpfun->head->params;
-                Ty_tyList tylist = NULL;
-                while(tmpfeldList)
-                {
-                    Ty_ty ty =(Ty_ty)S_look(tenv,tmpfeldList->head->typ);
-                    if(ty == NULL)
-                    {
-                        assert(0);
-                    }
-                    tylist = Ty_TyList(ty, tylist);
-                    tmpfeldList = tmpfeldList->tail;
-                    boollist = U_BoolList(true, boollist);
-                }
-                if(innerIdentifiers(tmpfun->head->name))
-                {
-                    assert(0);
-                }
-//¿‡À?”⁄…?√˜“ª∏ˆ∫Ø ? ªπ√ª”–∂®“ÂÀ¸
-                newlevel = Tr_newLevel(level ,Temp_newlabel() ,boollist); 
-                reslut =(Ty_ty)S_look(tenv ,tmpfun->head->result);
-                if(reslut == NULL)
-                {
-                    reslut = Ty_Void();
-                }
-                S_enter(venv, tmpfun->head->name, E_FunEntry(newlevel, newlevel->frame->name, tylist, reslut));
-                tmpfun = tmpfun->tail;
-U_ClearBoolList(boollist); // “ÚŒ™÷ª «”√¡Àbool ≤¢√ª”–±£¥ÊÀ¸ À?“‘ªπ“™ Õ∑≈“ªœ¬
-boollist = NULL;
-}
-tmpfun = dec->u.function;
-E_enventry funEntry;
-Tr_accesslist tr_acceselist, tmpacclist;
-Tr_expList trexplist = NULL;
-while(tmpfun)
-{
-    S_beginScope(venv);
-    funEntry =(E_enventry) S_look(venv, tmpfun->head->name);
-    tmpacclist = tr_acceselist = Tr_formals(funEntry->u.fun.level);
-A_fieldList tmpfeldList = tmpfun->head->params; // ’‚¿Ô“™øº¬«µΩparamsµƒ…˙≥…∑Ω Ω »Áπ?∫Õtr_accesslist≤ª“ª÷¬“™∏ƒ“ªœ¬
-while(tmpfeldList)
-{
-    Ty_ty ty =(Ty_ty)S_look(tenv,tmpfeldList->head->typ);
-    if(innerIdentifiers(tmpfeldList->head->name))
-    {
-        assert(0);
-    }
-    S_enter(venv ,tmpfeldList->head->name, E_VarEntry(tmpacclist->head,ty));
-    tmpfeldList = tmpfeldList->tail;
-    tmpacclist =  tmpacclist->tial;
-}
-expty  tmp = transExp(venv, tenv, tmpfun->head->body, newlevel);
-trexplist = Tr_ExpList(tmp.exp, trexplist);
-if(tmp.ty != pointedTy(funEntry->u.fun.result))
-{
-    assert(0);
-}
-Tr_ClearAcces(tr_acceselist); //÷ª π”√¡Àhead tail≤ø∑÷«Â¿Ì∏…æª
-S_endScope(venv);
-tmpfun = tmpfun->tail;
-}
-return Tr_funDec(trexplist);
-}
+Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
+    switch(dec->kind){
+    case A_functionDec:
+        S_symbol name = dec->u.function.name;
+        A_fieldList para = dec->u.function.params;
+        A_ty result = dec->u.function.result;
+        A_exp body = dec->u.function.body;
+
+        Tr_level newlevel;
+        Tr_access acce;
+        U_boolList boollist = NULL;
+        Ty_ty res = NULL;
+        Ty_tyList tylist = NULL;
+
+        E_enventry funEntry;
+        Tr_accesslist tr_acceselist, tmpacclist;
+        struct expty tmp;
+
+        while(para){
+            Ty_ty ty = (Ty_ty)S_look(tenv, para->head->typ);
+            if(!ty) 
+                // if(!innerTypes) possible unfinished flag
+                type_error(dec->pos, "unknown type: %s", S_name(para->head->name));
+            tylist = Ty_TyList(ty, tylist);
+            para = para->tail;
+            boollist = U_BoolList(TRUE, boollist);
+        }
+        if(innerIdentifiers(name))
+            type_error(dec->pos, "cannot use inner type as function name");
+        newlevel = Tr_newLevel(level, Temp_newlabel(), boollist);
+        res = (Ty_ty)S_look(tenv, result);
+        if(!res)
+            type_error(dec->pos, "unknown return type");
+        funEntry = E_FunEntry(newlevel, newlevel->frame->name, tylist, res);
+        S_enter(venv, S_Symbol(name), funEntry);
+        U_ClearBoolList(boollist);
+
+        S_beginScope(venv);
+        tmpacclist = tr_acceselist = Tr_formals(funEntry->u.fun.level);
+        para = dec->u.function.params;
+        while(para){
+            Ty_ty ty =(Ty_ty)S_look(tenv, para->head->typ);
+            S_enter(venv, S_Symbol(name), E_VarEntry(tmpacclist->head, ty));
+            para = para->tail
+            tmpacclist = tmpacclist->tail;
+        }
+        tmp = transExp(venv, tenv, body, newlevel);
+        if(isTyequTy(tmp.ty, funEntry->u.fun.result))
+            type_error(dec->pos, "return type not matched");
+        Tr_ClearAcces(tr_acceselist);
+        S_endScope(venv);
+        return Tr_funDec(tmp.exp);
+// struct {A_efieldList varList; A_ty typ; bool escape;} var;
+// struct A_efield_ {S_symbol name; A_exp exp;};
+// struct A_efieldList_ {A_efield head; A_efieldList tail;};
+    case A_varDec:
+        A_efieldList vars = dec->u.var.varList;
+        Tr_expList initList = NULL;
+        Tr_accessList accList = NULL;
+        if(!vars)assert(0);
+        while(vars){
+            A_efiled var = vars->head;
+            Tr_access acc = Tr_allocLocal(level, dec->u.var.escape);
+            struct expty tmp = transExp(venv, tenv, var->exp, level);
+            Tr_ExpList(tmp.exp, initList);
+            Tr_Accesslist(acc, accList);
+            if(!isTyequTy(transTy(tenv, dec->u.var.typ), tmp.ty))
+                type_error(dec->pos, "variable type not matched");
+            S_enter(venv, var->name, E_VarEntry(acc, tmp.ty));
+            vars=vars->tail;
+        }
+        return Tr_varDec(accList, initList);
+
 case A_typeDec :
 {
     A_nametyList namelist = dec->u.type;
@@ -375,6 +373,7 @@ case A_typeDec :
 }
 return Tr_typeDec();
 }
+<<<<<<< HEAD
 case A_varDec :
 {
     if(dec->u.var.init == NULL)
@@ -425,6 +424,9 @@ case A_varDec :
         }
 }
 }
+=======
+    
+>>>>>>> ac4039dacd13e661a9ade6820ef4414a535e83c1
 assert(0);
 }
 
