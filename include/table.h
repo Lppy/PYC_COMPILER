@@ -1,13 +1,21 @@
-/*
- * table.h - generic hash table
- *
- * No algorithm should use these functions directly, because
- *  programming with void* is too error-prone.  Instead,
- *  each module should make "wrapper" functions that take
- *  well-typed arguments and call the TAB_ functions.
- */
+#ifndef TABLE_H_
+#define TABLE_H_
+
+#define TABSIZE 127
 
 typedef struct TAB_table_ *TAB_table;
+struct TAB_table_ {
+	binder table[TABSIZE];
+	void *top;
+};
+
+typedef struct binder_ *binder;
+struct binder_ {
+    void *key; 
+    void *value; 
+    binder next; 
+    void *prevtop;
+};
 
 /* Make a new table mapping "keys" to "values". */
 TAB_table TAB_empty(void);
@@ -23,10 +31,9 @@ void *TAB_look(TAB_table t, void *key);
  * This may expose another binding for the same key, if there was one. */
 void *TAB_pop(TAB_table t);
 
-
 /* Call "show" on every "key"->"value" pair in the table,
  *  including shadowed bindings, in order from the most 
  *  recent binding of any key to the oldest binding in the table */
 void TAB_dump(TAB_table t, void (*show)(void *key, void *value));
 
-
+#endif
