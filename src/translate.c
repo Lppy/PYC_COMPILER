@@ -583,6 +583,9 @@ Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)
         accList = accList->tail;
         initList = initList->tail;
     }
+    if(flag==0){
+        return Tr_Ex(T_Const(0));
+    }
     return Tr_Nx(stm);
 }
 

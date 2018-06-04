@@ -12,7 +12,7 @@ struct expty expTy(Tr_exp exp, Ty_ty ty){
 T_stm transDecList(A_decList prog){
     S_table venv = E_base_venv(), tenv = E_base_tenv();
     Tr_level level = Tr_newLevel(NULL, Temp_namedlabel("root"), NULL);
-    Tr_expList tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);printf("transDecList\n");
+    Tr_expList tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);
     prog = prog->tail;
     while(prog){
         tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), tmp);
@@ -22,7 +22,7 @@ T_stm transDecList(A_decList prog){
 }
 
 struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
-    static bool done  = FALSE;printf("transExp\n");
+    static bool done  = FALSE;
     if(exp == NULL) assert(0);
     switch(exp->kind){
     case A_varExp:
@@ -280,7 +280,6 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
 }
 
 struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
-    printf("transVar\n");
     switch(var->kind){
     case A_simpleVar:
         {
@@ -323,7 +322,6 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
 }
 
 Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
-    printf("transDec\n");
     switch(dec->kind){
     case A_functionDec:
         {
@@ -397,7 +395,6 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
                 }
                 else{
                     initList = Tr_ExpList(NULL, initList);
-                    
                 }
                 accList = Tr_Accesslist(acc, accList);
                 if(!S_look(venv, var->name));
@@ -436,7 +433,6 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
 
 Ty_ty transTy(S_table tenv, A_ty ty)
 {
-    printf("transTy\n");
     switch(ty->kind)
     {
     case A_nameTy:
