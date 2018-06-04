@@ -20,6 +20,13 @@ Ty_ty Ty_String(void) {return &tystring;}
 static struct Ty_ty_ tyvoid = {Ty_void};
 Ty_ty Ty_Void(void) {return &tyvoid;}
 
+Ty_ty Ty_targetTy(Ty_ty ty)
+{
+	while(ty->kind == Ty_array)
+		ty = ty->u.array.ty;
+	return ty;
+}
+
 Ty_ty Ty_Struct(S_symbol sym, Ty_fieldList fields)
 {
 	Ty_ty p = checked_malloc(sizeof(*p));

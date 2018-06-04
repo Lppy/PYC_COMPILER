@@ -12,12 +12,25 @@ struct expty expTy(Tr_exp exp, Ty_ty ty){
 T_stm transDecList(A_decList prog){
     S_table venv = E_base_venv(), tenv = E_base_tenv();
     Tr_level level = Tr_newLevel(NULL, Temp_namedlabel("root"), NULL);
-    Tr_expList tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);
+    Tr_expList tmp;
+    A_decList tnew = prog, told=NULL, t;
+    S_beginScope(venv);
+    S_beginScope(tenv);
+    while(tnew){
+        t = tnew->tail;
+        tnew->tail = told;
+        told = tnew;
+        tnew = t;
+    }
+    prog = told;
+    tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);
     prog = prog->tail;
     while(prog){
         tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), tmp);
         prog = prog->tail;
     }
+    S_endScope(venv);
+    S_endScope(tenv);
     return Tr_mergeExpList(tmp);
 }
 
@@ -165,16 +178,23 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
                 return expTy(Tr_seqExp(trexplist), Ty_Void());
             }
             trexplist = Tr_ExpList(transExp(venv, tenv, explist->head, level).exp, trexplist);
-            Tr_FreeExpList(trexplist); //只释放链表结构 不是放内容(hand)
+            //Tr_FreeExpList(trexplist); //只释放链表结构 不是放内容(hand)
             return expTy(Tr_seqExp(trexplist), tmp);
         }
     case A_assignExp:
         {
             struct expty tmpV = transVar(venv, tenv, exp->u.assign.var, level);
             struct expty tmpE = transExp(venv, tenv, exp->u.assign.exp, level);
-            if((!Ty_IsNum(tmpV.ty)) || (!Ty_IsNum(tmpE.ty)))
-                if(tmpV.ty->kind != tmpE.ty->kind)
-                    type_error(exp->pos, "only of same type or numbers are assignable");
+            if(tmpV.ty->kind == Ty_array){
+                if((!Ty_IsNum(Ty_targetTy(tmpV.ty))) || (!Ty_IsNum(tmpE.ty)))
+                    if(Ty_targetTy(tmpV.ty)->u.structt.sym != tmpE.ty->u.structt.sym)
+                        type_error(exp->pos, "only of same type or structs are assignable");
+            }
+            else if(tmpV.ty->kind == Ty_struct){
+                if(tmpV.ty->u.structt.sym != tmpE.ty->u.structt.sym)
+                    type_error(exp->pos, "only of same type or structs are assignable");
+            }else if((!Ty_IsNum(tmpV.ty)) || (!Ty_IsNum(tmpE.ty)))
+                type_error(exp->pos, "only of same type or numbers are assignable");
             return expTy(Tr_assignExp(tmpV.exp, tmpE.exp), Ty_Void());
         }
     case A_ifExp:
@@ -235,7 +255,6 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         {
             struct expty tmp;
             S_beginScope(venv);
-            S_beginScope(tenv);
             A_decList declist = exp->u.let.decs;
             Tr_expList trexplist = NULL;
             while(declist){
@@ -248,9 +267,8 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             }
             else
                 tmp = expTy(Tr_letExp(trexplist, NULL), Ty_Void());
-            Tr_FreeExpList(trexplist);
+            //Tr_FreeExpList(trexplist);
             S_endScope(venv);
-            S_endScope(tenv);
             return tmp;
         }
     case A_switchExp:
@@ -312,7 +330,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
             struct expty tmpexp = transExp(venv, tenv, var->u.subscript.exp, level);
             if(tmpvar.ty->kind != Ty_array)
                 type_error(var->pos, "not a pointer type");
-            if(tmpexp.ty->kind != Ty_int || tmpexp.ty->kind != Ty_char)
+            if(tmpexp.ty->kind != Ty_int && tmpexp.ty->kind != Ty_char)
                 type_error(var->pos, "the index is not integer");
             return expTy(Tr_subscriptVar(tmpvar.exp ,tmpexp.exp), tmpvar.ty);
         }

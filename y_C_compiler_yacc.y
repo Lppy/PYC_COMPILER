@@ -96,7 +96,7 @@ postfix_expression
 //---A_var
 postfix_var
         : IDENTIFIER {$$ = A_SimpleVar(pos, S_Symbol($1));}
-        | postfix_var '[' expression ']' {$$ = A_SubscriptVar(pos, $1, A_SeqExp(pos, $3));}
+        | postfix_var '[' constant_expression ']' {$$ = A_SubscriptVar(pos, $1, $3);}
         | postfix_var '.' IDENTIFIER {$$ = A_FieldVar(pos, $1, S_Symbol($3));}
         | postfix_var PTR_OP IDENTIFIER {$$ = A_FieldVar(pos, A_SubscriptVar(pos, $1, A_IntExp(pos, 0)), S_Symbol($3)); }
         | '(' unary_var ')' {$$ = $2;}

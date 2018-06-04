@@ -23,6 +23,7 @@ static void pr_dec(FILE *out, A_dec v, int d) {
 	case A_functionDec:
 		fprintf(out, "functionDec(%s,\n", S_name(v->u.function.name)); 
 		pr_fieldList(out, v->u.function.params, d+1); fprintf(out, "\n");
+		pr_ty(out, v->u.function.result, d+1); fprintf(out, "\n");
 		pr_exp(out, v->u.function.body, d+1); fprintf(out, ")");
 		break;
 	case A_varDec:
@@ -79,7 +80,12 @@ static void pr_efield(FILE *out, A_efield v, int d) {
 	indent(out, d);
 	if (v) {
 		fprintf(out, "efield(%s,\n", S_name(v->name));
-		pr_exp(out, v->exp, d+1); fprintf(out, ")");
+		if(v->exp) {
+			pr_exp(out, v->exp, d+1); fprintf(out, ")");
+		}
+		else{
+			indent(out, d+1); fprintf(out, ")");
+		}
 	}
 	else fprintf(out, "efield()");
 }

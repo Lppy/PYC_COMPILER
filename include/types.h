@@ -22,6 +22,8 @@ struct Ty_fieldList_ {Ty_field head; Ty_fieldList tail;};
 
 bool Ty_IsNum(Ty_ty ty);
 
+Ty_ty Ty_targetTy(Ty_ty ty);
+
 Ty_ty Ty_Nil(void);
 Ty_ty Ty_Int(void);
 Ty_ty Ty_Float(void);

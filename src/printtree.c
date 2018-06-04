@@ -96,7 +96,9 @@ void printStmList(FILE *out, T_stmList stmList)
 {
 	for(; stmList; stmList=stmList->tail)
 	{
-		pr_stm(out, stmList->head, 0); 
-		fprintf(out, "\n");
+		if(stmList->head) {
+			pr_stm(out, stmList->head, 0); 
+			fprintf(out, "\n");
+		}
 	}
 }
