@@ -16,14 +16,14 @@ Temp_temp F_FP()
 static Temp_temp rv = NULL;
 Temp_temp F_RV()
 {
-    if (rv == NULL)
+    if(rv == NULL)
     {
         rv = Temp_newtemp();
     }
-    return rv ;
+    return rv;
 }
 
-F_access F_allocLoacl(F_frame f, bool escape)
+F_access F_allocLocal(F_frame f, bool escape)
 {
     F_access access;
     if(escape == TRUE)
@@ -100,13 +100,13 @@ T_exp F_AddressExp(F_access acc, T_exp framePtr)
 
 T_exp F_Exp(F_access acc, T_exp framePtr)
 {
-    if (acc->kind == inFrame )
+    if (acc->kind == inFrame)
     {
         return T_Mem(T_Binop(T_plus, framePtr, T_Const(acc->u.offset)));
     }
     return  T_Temp(acc->u.reg);
 }
-
+/*
 F_frag F_StringFrag(Temp_label label , string str)
 {
     F_frag tmp = (F_frag) checked_malloc(sizeof(*tmp)) ;
@@ -132,7 +132,8 @@ F_fragList F_FragList(F_frag frag , F_fragList tail)
     tmp->tail = tail ;
     return tmp; 
 }
-T_stm F_procEntryExit1(F_frame frame , T_stm stm) 
+*/
+T_stm F_procEntryExit1(F_frame frame, T_stm stm) 
 {
     return stm ;
 }

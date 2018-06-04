@@ -10,16 +10,16 @@ extern const int F_wordSize;
 
 typedef struct Tr_access_ *Tr_access;  
 typedef struct Tr_accesslist_ *Tr_accesslist;
-typedef struct Tr_level_ *Tr_level;
+typedef struct Tr_frame_ *Tr_frame;
 typedef struct Tr_exp_*Tr_exp;
 typedef struct Tr_expList_ *Tr_expList;
 typedef struct patchList_ *patchList;
 
-struct  Tr_access_ { Tr_level level; F_access access; };
+struct  Tr_access_ { Tr_frame frame; F_access access; }; 
 
 struct  Tr_accesslist_ { Tr_access head; Tr_accesslist tail; };
 
-struct  Tr_level_ { Tr_level parent; F_frame frame; };
+struct  Tr_frame_ { Tr_frame parent; F_frame frame; };
 
 struct Cx { patchList trues; patchList falses; T_stm stm; };
 
@@ -58,10 +58,10 @@ Tr_exp Tr_floatExp(float f);
 Tr_exp Tr_charExp(char c);
 Tr_exp Tr_stringExp(string str);
 
-Tr_exp Tr_simpleVar(Tr_access acc, Tr_level level);
+Tr_exp Tr_simpleVar(Tr_access acc, Tr_frame frame);
 Tr_exp Tr_subscriptVar(Tr_exp base, Tr_exp index);
 Tr_exp Tr_fieldVar(Tr_exp base, int offset);
-Tr_exp Tr_addressVar(Tr_access acc, Tr_level level);
+Tr_exp Tr_addressVar(Tr_access acc, Tr_frame frame);
 
 Tr_exp Tr_binopExp(Tr_exp left, Tr_exp right, A_oper oper); //mod
 Tr_exp Tr_relopExp(Tr_exp left, Tr_exp right, A_oper oper);
@@ -79,30 +79,29 @@ Tr_exp Tr_continueExp();
 Tr_exp Tr_letExp(Tr_expList declist, Tr_exp exp);
 Tr_exp Tr_caseExp(Tr_exp test, Tr_exp constant, Tr_exp body);
 Tr_exp Tr_switchExp(Tr_expList bodyList);  //从后往前的body链表
-Tr_exp Tr_returnExp(Tr_exp res); //F_RA()
+Tr_exp Tr_returnExp(Tr_exp res);
 
-Tr_exp Tr_callExp(Temp_label label, Tr_level funlevel, Tr_level level, Tr_expList args);
+Tr_exp Tr_callExp(Temp_label label, Tr_expList args);
 
 Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList);
 Tr_exp Tr_structDec();
-Tr_exp Tr_funDec(Tr_exp body);
+Tr_exp Tr_funDec(Temp_label label, Tr_exp body);
 
 
-Tr_exp Tr_StaticLink(Tr_level now, Tr_level def);
+//Tr_exp Tr_StaticLink(Tr_frame now, Tr_frame def);
 
 Tr_expList Tr_ExpList(Tr_exp head, Tr_expList tail);
-void Tr_FreeExpList(Tr_expList list);
 
-void Tr_procEntryExit(Tr_level level, Tr_exp body, Tr_accesslist formals);
+//void Tr_procEntryExit(Tr_frame frame, Tr_exp body, Tr_accesslist formals);
 
-F_fragList Tr_getResult() ;
+//F_fragList Tr_getResult() ;
 
 Tr_accesslist Tr_Accesslist(Tr_access head, Tr_accesslist tial);
-Tr_access Tr_Access(Tr_level level, F_access access);
-Tr_level Tr_outermorst();
-Tr_level Tr_newLevel(Tr_level parent, Temp_label name, U_boolList formals);
-Tr_accesslist Tr_formals(Tr_level level);
-Tr_access Tr_allocLocal(Tr_level level, bool escape);
+Tr_access Tr_Access(Tr_frame frame, F_access access);
+//Tr_frame Tr_outermorst();
+Tr_frame Tr_newFrame(Tr_frame parent, Temp_label name, U_boolList formals);
+Tr_accesslist Tr_formals(Tr_frame frame);
+Tr_access Tr_allocLocal(Tr_frame frame, bool escape);
 void Tr_ClearAcces(Tr_accesslist list);
 
 //Tr_exp Tr_recordExp(Tr_expList explist , int num);
