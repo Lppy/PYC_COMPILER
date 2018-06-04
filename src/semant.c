@@ -11,7 +11,7 @@ struct expty expTy(Tr_exp exp, Ty_ty ty){
 
 T_stm transDecList(A_decList prog){
     S_table venv = E_base_venv(), tenv = E_base_tenv();
-    Tr_level level = Tr_newLevel(NULL, Temp_namedlabel("root"), NULL);
+    Tr_frame frame = Tr_newFrame(NULL, Temp_namedlabel("root"), NULL);
     Tr_expList tmp;
     A_decList tnew = prog, told=NULL, t;
     S_beginScope(venv);
@@ -23,10 +23,10 @@ T_stm transDecList(A_decList prog){
         tnew = t;
     }
     prog = told;
-    tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);
+    tmp = Tr_ExpList(transDec(venv, tenv, prog->head, frame), NULL);
     prog = prog->tail;
     while(prog){
-        tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), tmp);
+        tmp = Tr_ExpList(transDec(venv, tenv, prog->head, frame), tmp);
         prog = prog->tail;
     }
     S_endScope(venv);
@@ -34,12 +34,12 @@ T_stm transDecList(A_decList prog){
     return Tr_mergeExpList(tmp);
 }
 
-struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
+struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
     static bool done  = FALSE;
     if(exp == NULL) assert(0);
     switch(exp->kind){
     case A_varExp:
-        return transVar(venv, tenv, exp->u.var, level);
+        return transVar(venv, tenv, exp->u.var, frame);
     case A_nilExp:
         return expTy(Tr_nilExp() ,Ty_Nil());
     case A_intExp:
@@ -55,15 +55,15 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             E_enventry tmp =(E_enventry)S_look(venv, exp->u.call.func);
             if(tmp == NULL)
                 type_error(exp->pos, "function %s undeclared", S_name(exp->u.call.func));
-            Ty_tyList tylist  = tmp->u.fun.formals;
+            Ty_fieldList tylist  = tmp->u.fun.formals;
             A_expList explist = exp->u.call.args;
             Tr_expList trexplist = NULL;
             while(tylist != NULL && explist != NULL){
-                struct expty exptyp = transExp(venv, tenv, explist->head, level);
+                struct expty exptyp = transExp(venv, tenv, explist->head, frame);
                 if(exptyp.ty->kind == Ty_nil){
                     continue;
                 }
-                if(!isTyequTy(tylist->head, exptyp.ty))
+                if(!isTyequTy(tylist->head->ty, exptyp.ty))
                     type_error(exp->pos, "parameter type unequal");
                 trexplist = Tr_ExpList(exptyp.exp, trexplist);
                 tylist = tylist->tail;  
@@ -71,13 +71,28 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             }
             if(tylist != NULL || explist != NULL)
                 type_error(exp->pos, "unfit parameter count");
-            return expTy(Tr_callExp(tmp->u.fun.label, tmp->u.fun.level, level, trexplist), tmp->u.fun.result);
+            
+            Tr_frame newframe = Tr_newFrame(frame, tmp->u.fun.label, tmp->u.fun.boollist);
+            Tr_accesslist tr_acceselist, ptr_acclist;
+            S_beginScope(venv);
+            ptr_acclist = tr_acceselist = Tr_formals(newframe);
+            tylist = tmp->u.fun.formals;
+            while(tylist){
+                // Ty_ty ty =(Ty_ty)S_look(tenv, para->head->typ);
+                Ty_field ty = tylist->head;
+                S_enter(venv, ty->name, E_VarEntry(ptr_acclist->head, ty->ty));
+                tylist = tylist->tail;
+                ptr_acclist = ptr_acclist->tail;
+            }
+            Tr_ClearAcces(tr_acceselist);
+            S_endScope(venv);
+            return expTy(Tr_callExp(tmp->u.fun.label, trexplist), tmp->u.fun.result);
         }
     case A_conExp:
         {
-            struct expty tmptest = transExp(venv, tenv, exp->u.con.left, level);
-            struct expty tmpleft = transExp(venv, tenv, exp->u.con.mid, level);
-            struct expty tmpright = transExp(venv, tenv, exp->u.con.right, level);
+            struct expty tmptest = transExp(venv, tenv, exp->u.con.left, frame);
+            struct expty tmpleft = transExp(venv, tenv, exp->u.con.mid, frame);
+            struct expty tmpright = transExp(venv, tenv, exp->u.con.right, frame);
             if(!Ty_IsNum(tmptest.ty))
                 type_error(exp->pos, "the type is not interpretable");
             if(tmpleft.ty->kind != tmpright.ty->kind)
@@ -87,8 +102,8 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         }
     case A_opExp:
         {
-            struct expty tmpleft = transExp(venv, tenv, exp->u.op.left, level);
-            struct expty tmpright = transExp(venv, tenv, exp->u.op.right, level);
+            struct expty tmpleft = transExp(venv, tenv, exp->u.op.left, frame);
+            struct expty tmpright = transExp(venv, tenv, exp->u.op.right, frame);
             switch(exp->u.op.oper)
             {
             case A_landOp: case A_lorOp: case A_plusOp:
@@ -135,7 +150,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         }
     case A_unaryExp:
         {
-            struct expty tmp = transExp(venv, tenv, exp->u.unary.exp, level);
+            struct expty tmp = transExp(venv, tenv, exp->u.unary.exp, frame);
             switch(exp->u.unary.unoper){
             /*
             case A_ptrOp:
@@ -166,7 +181,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             Ty_ty tmp; int flag = 0;
             if(explist){
                 while(explist->tail){
-                    struct expty t = transExp(venv, tenv, explist->head, level);
+                    struct expty t = transExp(venv, tenv, explist->head, frame);
                     trexplist = Tr_ExpList(t.exp, trexplist);
                     if(!flag){
                         tmp = t.ty;
@@ -177,14 +192,14 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             } else{
                 return expTy(Tr_seqExp(trexplist), Ty_Void());
             }
-            trexplist = Tr_ExpList(transExp(venv, tenv, explist->head, level).exp, trexplist);
+            trexplist = Tr_ExpList(transExp(venv, tenv, explist->head, frame).exp, trexplist);
             //Tr_FreeExpList(trexplist); //只释放链表结构 不是放内容(hand)
             return expTy(Tr_seqExp(trexplist), tmp);
         }
     case A_assignExp:
         {
-            struct expty tmpV = transVar(venv, tenv, exp->u.assign.var, level);
-            struct expty tmpE = transExp(venv, tenv, exp->u.assign.exp, level);
+            struct expty tmpV = transVar(venv, tenv, exp->u.assign.var, frame);
+            struct expty tmpE = transExp(venv, tenv, exp->u.assign.exp, frame);
             if(tmpV.ty->kind == Ty_array){
                 if((!Ty_IsNum(Ty_targetTy(tmpV.ty))) || (!Ty_IsNum(tmpE.ty)))
                     if(Ty_targetTy(tmpV.ty)->u.structt.sym != tmpE.ty->u.structt.sym)
@@ -201,12 +216,12 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         {
             struct expty tmptest;
             S_beginScope(venv);
-            tmptest = transExp(venv, tenv, exp->u.iff.test, level);
+            tmptest = transExp(venv, tenv, exp->u.iff.test, frame);
             if(!Ty_IsNum(tmptest.ty))
                 type_error(exp->pos, "the type is not interpretable");
-            struct expty tmpthen = transExp(venv, tenv, exp->u.iff.then, level);
+            struct expty tmpthen = transExp(venv, tenv, exp->u.iff.then, frame);
             if(exp->u.iff.elsee != NULL){
-                struct expty tmpelse = transExp(venv, tenv, exp->u.iff.elsee, level);
+                struct expty tmpelse = transExp(venv, tenv, exp->u.iff.elsee, frame);
                 if(tmpthen.ty != tmpelse.ty)
                     type_error(exp->pos, "else error");
                 return expTy(Tr_ifExp(tmptest.exp, tmpthen.exp, tmpelse.exp), tmpelse.ty);
@@ -220,10 +235,10 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         {
             struct expty test;
             S_beginScope(venv);
-            test = transExp(venv, tenv, exp->u.whilee.test, level);
+            test = transExp(venv, tenv, exp->u.whilee.test, frame);
             if(!Ty_IsNum(test.ty))
                 type_error(exp->pos, "the type is not interpretable");
-            struct expty body = transExp(venv, tenv, exp->u.whilee.body, level);
+            struct expty body = transExp(venv, tenv, exp->u.whilee.body, frame);
             if(done) done = FALSE;
             S_endScope(venv);
             return expTy(Tr_whileExp(test.exp, body.exp, FALSE), Ty_Void());
@@ -232,12 +247,12 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         {
             struct expty tmpe1, tmpe2, tmpe3, tmpbody;
             S_beginScope(venv);
-            tmpe1 = transExp(venv, tenv, exp->u.forr.e1, level);
-            tmpe2 = transExp(venv, tenv, exp->u.forr.e2, level);
-            tmpe3 = transExp(venv, tenv, exp->u.forr.e3, level);
-            tmpbody = transExp(venv, tenv, exp->u.forr.body, level);
+            tmpe1 = transExp(venv, tenv, exp->u.forr.e1, frame);
+            tmpe2 = transExp(venv, tenv, exp->u.forr.e2, frame);
+            tmpe3 = transExp(venv, tenv, exp->u.forr.e3, frame);
+            tmpbody = transExp(venv, tenv, exp->u.forr.body, frame);
             // Tr_access acc;
-            // acc = Tr_allocLocal(level, exp->u.forr.e2);
+            // acc = Tr_allocLocal(frame, exp->u.forr.e2);
             // S_enter(venv, exp->u.forr.var, E_VarEntry(acc ,Ty_Int()));
             // if(tmplo.ty->kind != Ty_ty_::Ty_int || tmphi.ty->kind != Ty_ty_::Ty_int)
             //     assert(0);
@@ -258,11 +273,11 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             A_decList declist = exp->u.let.decs;
             Tr_expList trexplist = NULL;
             while(declist){
-                trexplist = Tr_ExpList(transDec(venv, tenv, declist->head, level), trexplist);
+                trexplist = Tr_ExpList(transDec(venv, tenv, declist->head, frame), trexplist);
                 declist = declist->tail;
             }
             if(exp->u.let.body){
-                tmp = transExp(venv, tenv, exp->u.let.body, level);
+                tmp = transExp(venv, tenv, exp->u.let.body, frame);
                 tmp = expTy(Tr_letExp(trexplist, tmp.exp), tmp.ty);
             }
             else
@@ -273,14 +288,14 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         }
     case A_switchExp:
         {
-            struct expty tmptest = transExp(venv, tenv, exp->u.switchh.test, level);
+            struct expty tmptest = transExp(venv, tenv, exp->u.switchh.test, frame);
             A_expList body = exp->u.switchh.bodyList;
             Tr_expList bodylist = NULL;
             if(tmptest.ty->kind != Ty_int || tmptest.ty->kind != Ty_char)
                 type_error(exp->pos, "only char or int are allowed to be switched");
             while(body){
-                struct expty tmpcon = transExp(venv, tenv, body->head->u.casee.constant, level);
-                struct expty tmpbody = transExp(venv, tenv, body->head->u.casee.body, level);
+                struct expty tmpcon = transExp(venv, tenv, body->head->u.casee.constant, frame);
+                struct expty tmpbody = transExp(venv, tenv, body->head->u.casee.body, frame);
                 if(tmpcon.ty->kind != Ty_int && tmpcon.ty->kind != Ty_char)
                     type_error(exp->pos, "only char or int are allowed to be as cases");
                 bodylist = Tr_ExpList(Tr_caseExp(tmptest.exp, tmpcon.exp, tmpbody.exp), bodylist);
@@ -290,20 +305,21 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         }
     case A_returnExp:
         {
-            struct expty tmp = transExp(venv, tenv, exp->u.returnn.res, level);
+            struct expty tmp = transExp(venv, tenv, exp->u.returnn.res, frame);
             tmp = expTy(Tr_returnExp(tmp.exp), tmp.ty);
+            return tmp;
         }
     default: assert(0);
     }
 }
 
-struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
+struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
     switch(var->kind){
     case A_simpleVar:
         {
             E_enventry tmp =(E_enventry)S_look(venv, var->u.simple);
             if(tmp != NULL && tmp->kind == E_varEntry)
-                return expTy(Tr_simpleVar(tmp->u.var.acc, level), tmp->u.var.ty); //?????????????
+                return expTy(Tr_simpleVar(tmp->u.var.acc, frame), tmp->u.var.ty); //?????????????
             else if(tmp == NULL)
                 type_error(var->pos, "variable not defined");
             else
@@ -312,7 +328,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
     case A_fieldVar:
         {
             int num = 0;
-            struct expty tmp = transVar(venv, tenv, var->u.field.var, level);
+            struct expty tmp = transVar(venv, tenv, var->u.field.var, frame);
             Ty_fieldList fieldList = tmp.ty->u.structt.structure;
             if(tmp.ty->kind != Ty_struct)
                 type_error(var->pos, "not a struct type");
@@ -326,20 +342,24 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
         }
     case A_subscriptVar:
         {
-            struct expty tmpvar = transVar(venv, tenv, var->u.subscript.var, level);
-            struct expty tmpexp = transExp(venv, tenv, var->u.subscript.exp, level);
+            struct expty tmpvar = transVar(venv, tenv, var->u.subscript.var, frame);
+            struct expty tmpexp = transExp(venv, tenv, var->u.subscript.exp, frame);
             if(tmpvar.ty->kind != Ty_array)
                 type_error(var->pos, "not a pointer type");
             if(tmpexp.ty->kind != Ty_int && tmpexp.ty->kind != Ty_char)
                 type_error(var->pos, "the index is not integer");
             return expTy(Tr_subscriptVar(tmpvar.exp ,tmpexp.exp), tmpvar.ty);
         }
+    case A_addressVar:
+        {
+            
+        }
     default: 
         assert(0);
     }
 }
 
-Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
+Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
     switch(dec->kind){
     case A_functionDec:
         {
@@ -348,52 +368,53 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             A_ty result = dec->u.function.result;
             A_exp body = dec->u.function.body;
 
-            Tr_level newlevel;
-            Tr_access acce;
+            Tr_frame absframe;
             U_boolList boollist = NULL;
             Ty_ty res = NULL;
-            Ty_tyList tylist = NULL;
+            Ty_fieldList fieldlist = NULL;
             Temp_label label = Temp_namedlabel(name->name);
 
             E_enventry funEntry;
-            Tr_accesslist tr_acceselist, tmpacclist;
+            Tr_accesslist tr_acceselist, ptr_acclist;
             struct expty tmp;
-
             while(para){
                 Ty_ty ty = transTy(tenv, para->head->typ);
                 if(!ty)
                     type_error(dec->pos, "unknown type: %s", S_name(para->head->name));
-                tylist = Ty_TyList(ty, tylist);
+                Ty_field field = Ty_Field(para->head->name, ty);
+                fieldlist = Ty_FieldList(field, fieldlist);
                 para = para->tail;
                 boollist = U_BoolList(TRUE, boollist);
             }
             if(innerIdentifiers(name))
                 type_error(dec->pos, "cannot use inner type as function name");
-            newlevel = Tr_newLevel(level, label, boollist);
+            absframe = Tr_newFrame(NULL, label, boollist);
             // res = (Ty_ty)S_look(tenv, result);
             res = transTy(tenv, result);
             if(!res)
                 type_error(dec->pos, "unknown return type");
-            funEntry = E_FunEntry(tylist, res, label, newlevel);//
+            funEntry = E_FunEntry(fieldlist, res, label, boollist);//
             S_enter(venv, name, funEntry);
             //U_ClearBoolList(boollist);
 
             S_beginScope(venv);
-            tmpacclist = tr_acceselist = Tr_formals(funEntry->u.fun.level); 
+//            tmpacclist = tr_acceselist = Tr_formals(funEntry->u.fun.frame);
             para = dec->u.function.params;
+            
+            ptr_acclist = tr_acceselist = Tr_formals(absframe);
             while(para){
                 // Ty_ty ty =(Ty_ty)S_look(tenv, para->head->typ);
                 Ty_ty ty = transTy(tenv, para->head->typ);
-                S_enter(venv, name, E_VarEntry(tmpacclist->head, ty));
+                S_enter(venv, para->head->name, E_VarEntry(ptr_acclist->head, ty));
                 para = para->tail;
-                tmpacclist = tmpacclist->tail;
+                ptr_acclist = ptr_acclist->tail;
             }
-            tmp = transExp(venv, tenv, body, newlevel);
+            tmp = transExp(venv, tenv, body, absframe);
             if(isTyequTy(tmp.ty, funEntry->u.fun.result))
                 type_error(dec->pos, "return type not matched");
             Tr_ClearAcces(tr_acceselist);
             S_endScope(venv);
-            return Tr_funDec(tmp.exp);
+            return Tr_funDec(label, tmp.exp);
         }
     case A_varDec:
         {
@@ -403,10 +424,10 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             if(!vars)assert(0);
             while(vars){
                 A_efield var = vars->head;
-                Tr_access acc = Tr_allocLocal(level, dec->u.var.escape);
+                Tr_access acc = Tr_allocLocal(frame, dec->u.var.escape);
                 struct expty tmp;
                 if(var->exp){
-                    tmp = transExp(venv, tenv, var->exp, level);
+                    tmp = transExp(venv, tenv, var->exp, frame);
                     initList = Tr_ExpList(tmp.exp, initList);
                     if(!isTyequTy(transTy(tenv, dec->u.var.typ), tmp.ty))
                         type_error(dec->pos, "variable type not matched");
@@ -415,7 +436,8 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
                     initList = Tr_ExpList(NULL, initList);
                 }
                 accList = Tr_Accesslist(acc, accList);
-                if(!S_look(venv, var->name));
+                if(!S_look(venv, var->name))
+                    ;
                 S_enter(venv, var->name, E_VarEntry(acc, transTy(tenv, dec->u.var.typ)));
                 vars=vars->tail;
             }

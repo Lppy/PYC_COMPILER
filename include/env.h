@@ -12,12 +12,12 @@ struct E_enventry_ {
     union
     {
         struct { Ty_ty ty; Tr_access acc; } var;
-        struct { Ty_tyList formals; Ty_ty result; Temp_label label; Tr_level level; } fun;
+        struct { Ty_fieldList formals; Ty_ty result; Temp_label label; U_boolList boollist; } fun;
     } u;
 };
 
 E_enventry E_VarEntry(Tr_access acc, Ty_ty ty);
-E_enventry E_FunEntry(Ty_tyList formals, Ty_ty reslut, Temp_label label, Tr_level level);
+E_enventry E_FunEntry(Ty_fieldList formals, Ty_ty reslut, Temp_label label, U_boolList boollist);
 
 S_table E_base_tenv();
 S_table E_base_venv();
