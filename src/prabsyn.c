@@ -32,7 +32,7 @@ static void pr_dec(FILE *out, A_dec v, int d) {
 		indent(out, d+1); fprintf(out, "%s", v->u.var.escape ? "TRUE)" : "FALSE)");
 		break;
 	case A_structDec:
-		fprintf(out, "structDec(%s,\n", S_name(v->u.structt.name)); 
+		fprintf(out, "structDec(%s,\n", S_name(v->u.structt.typ->u.name)); 
 		pr_fieldList(out, v->u.structt.structure, d+1); fprintf(out, ")");
 		break;
 	default:

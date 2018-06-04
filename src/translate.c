@@ -350,7 +350,7 @@ Tr_exp Tr_unaryopExp(Tr_exp exp, A_unoper unoper)
 Tr_exp Tr_conExp(Tr_exp left, Tr_exp mid, Tr_exp right)
 {
     struct Cx ctest = Tr_unCx(left);
-    T_exp midexp, rightexp;
+    T_stm midexp, rightexp;
     Temp_label t = Temp_newlabel();
     Temp_label f = Temp_newlabel();
     Temp_label jump = Temp_newlabel();
@@ -515,7 +515,7 @@ Tr_exp Tr_caseExp(Tr_exp test, Tr_exp constant, Tr_exp body)
         cx.trues = PatchList(&stm->u.CJUMP.trues, NULL);
         doPatch(cx.falses, f);
         doPatch(cx.trues, t); 
-        stm = T_Seq(stm, T_Seq(T_Label(t), T_Seq(Tr_unEx(body), T_Jump(T_Name(done), Temp_LabelList(done, NULL)))));
+        stm = T_Seq(stm, T_Seq(T_Label(t), T_Seq(Tr_unNx(body), T_Jump(T_Name(done), Temp_LabelList(done, NULL)))));
         stm = T_Seq(stm, T_Label(f));
         return Tr_Nx(stm);
     }
@@ -546,14 +546,14 @@ Tr_exp Tr_returnExp(Tr_exp res)
         return Tr_unNx(T_Jump(T_Name(label), Temp_LabelList(label, NULL)));
     */
     if(res)
-        return Tr_unNx(T_Move(tmp, Tr_unEx(res)));
+        return Tr_Nx(T_Move(tmp, Tr_unEx(res)));
     else
-        return Tr_unNx(T_Const(0));
+        return Tr_Nx(T_Move(tmp, T_Const(0)));
 }
 
 Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)
 {
-    T_stm stm = Tr_unNx(T_Const(0));
+    T_stm stm = Tr_unNx(Tr_Ex(T_Const(0)));
     T_exp tmp = T_Temp(F_FP());
     T_exp memt; 
     while(accList != NULL && initList != NULL){
@@ -568,7 +568,7 @@ Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)
 
 Tr_exp Tr_structDec(Tr_access acc, Tr_exp init)
 {
-    return Tr_Nx(Tr_unNx(T_Const(0)));
+    return Tr_Ex(T_Const(0));
 }
 
 Tr_exp Tr_funDec(Tr_exp body)
