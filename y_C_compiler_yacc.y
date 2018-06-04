@@ -377,7 +377,7 @@ jump_statement
         : CONTINUE ';' {$$=A_ContinueExp(pos);}
         | BREAK ';' {$$=A_BreakExp(pos);}
         | RETURN ';' {$$=A_ReturnExp(pos,null);}
-        | RETURN expression ';' {$$=A_ReturnExp(pos,A_SeqExp(pos,$2));}
+        | RETURN constant_expression ';' {$$=A_ReturnExp(pos, $2);}
         ;
 
 //---A_fieldList

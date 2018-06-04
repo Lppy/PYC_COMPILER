@@ -41,7 +41,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
     case A_varExp:
         return transVar(venv, tenv, exp->u.var, frame);
     case A_nilExp:
-        return expTy(Tr_nilExp() ,Ty_Nil());
+        return expTy(Tr_nilExp(), Ty_Void());
     case A_intExp:
         return expTy(Tr_intExp(exp->u.intt), Ty_Int());
     case A_charExp:
@@ -178,7 +178,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
         {
             A_expList explist = exp->u.seq;
             Tr_expList trexplist = NULL;
-            Ty_ty tmp; int flag = 0;
+            Ty_ty tmp = NULL; int flag = 0;
             if(explist){
                 while(explist->tail){
                     struct expty t = transExp(venv, tenv, explist->head, frame);
@@ -417,8 +417,15 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
                 ptr_acclist = ptr_acclist->tail;
             }
             tmp = transExp(venv, tenv, body, absframe);
-            if((!tmp.ty && funEntry->u.fun.result->kind!=Ty_void) || (isTyequTy(tmp.ty, funEntry->u.fun.result)))
-                type_error(dec->pos, "return type not matched");
+//            if((!tmp.ty && funEntry->u.fun.result->kind!=Ty_void) || (isTyequTy(tmp.ty, funEntry->u.fun.result)))
+            if(!tmp.ty){
+                if(funEntry->u.fun.result->kind!=Ty_void)
+                    type_error(dec->pos, "return type not matched");
+            } else {
+                if(!isTyequTy(tmp.ty, funEntry->u.fun.result))
+                    type_error(dec->pos, "return type not matched");
+            }
+            
             Tr_ClearAcces(tr_acceselist);
             S_endScope(venv);
             return Tr_funDec(label, tmp.exp);
