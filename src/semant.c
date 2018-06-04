@@ -417,7 +417,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
                 ptr_acclist = ptr_acclist->tail;
             }
             tmp = transExp(venv, tenv, body, absframe);
-            if(isTyequTy(tmp.ty, funEntry->u.fun.result))
+            if((!tmp.ty && funEntry->u.fun.result->kind!=Ty_void) || (isTyequTy(tmp.ty, funEntry->u.fun.result)))
                 type_error(dec->pos, "return type not matched");
             Tr_ClearAcces(tr_acceselist);
             S_endScope(venv);
