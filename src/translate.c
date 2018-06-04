@@ -1,6 +1,19 @@
 #include "translate.h"
 #include "env.h"
 
+T_stm Tr_mergeExpList(Tr_expList list)
+{
+    Temp_label main = Temp_namedlabel("main");
+    T_stm stm;
+    if(!main) assert(0);
+    stm = T_Jump(T_Name(main), Temp_LabelList(main, NULL));
+    while(list!=NULL){
+        stm = T_Seq(stm, Tr_unNx(list->head));
+        list = list->tail;
+    }
+    return stm;
+}
+
 Tr_access Tr_allocLocal(Tr_level level, bool escape)
 {
     F_access acc;

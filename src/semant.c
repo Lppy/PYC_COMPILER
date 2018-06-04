@@ -9,6 +9,17 @@ struct expty expTy(Tr_exp exp, Ty_ty ty){
     return e;
 }
 
+T_stm transDecList(A_decList prog){
+    S_table venv = E_base_venv(), tenv = E_base_tenv();
+    Tr_level level = Tr_newLevel(NULL, Temp_namedlabel("root"), NULL);
+    Tr_expList tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);
+    prog = prog->tail;
+    while(prog){
+        tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), tmp);
+    }
+    return Tr_mergeExpList(tmp);
+}
+
 struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
     static bool done  = FALSE;
     if(exp == NULL) assert(0);

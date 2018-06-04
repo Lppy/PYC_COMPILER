@@ -5,6 +5,9 @@
 #include "absyn.h"
 #include "error.h"
 #include "prabsyn.h"
+#include "semant.h"
+#include "tree.h"
+#include "printtree.h"
 
 #ifndef YYSTYPE
 union YACC_TYPE {
@@ -398,28 +401,9 @@ parameter_declaration
 int main(){
     error_reset();
     int res = yyparse();
-    /*
-    A_decList pro = PARSE_RES;puts("finished");
-    while(pro!=NULL){
-        A_dec p = pro->head;
-        switch(p->kind){
-        case A_structDec: printf("%s\n",S_name(p->u.structt.name)); break;
-        case A_varDec: {
-            A_efieldList vars = p->u.var.varList;
-            while(vars!=NULL){
-                A_efield var = vars->head;
-                printf("%s ",S_name(var->name));
-                vars = vars->tail;
-            }
-            printf("\n");
-        }
-        break;
-        case A_functionDec: printf("%s\n",S_name(p->u.function.name)); break;
-        }
-        pro = pro->tail;
-    }
-    */
-    pr_decList(stdout, PARSE_RES, 0);
+    //pr_decList(stdout, PARSE_RES, 0);
+    T_stm resTree = transDecList(PARSE_RES);
+    printStmList(stdout, T_StmList(resTree, NULL));
     return 0;
 }
 

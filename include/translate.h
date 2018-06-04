@@ -37,6 +37,7 @@ struct Tr_expList_ { Tr_exp head; Tr_expList tail; };
 
 struct patchList_ { Temp_label *head; patchList tail; };
 
+T_stm Tr_mergeExpList(Tr_expList list);
 
 Tr_exp Tr_Ex(T_exp exp);
 Tr_exp Tr_Nx(T_stm stm);
@@ -89,7 +90,7 @@ Tr_exp Tr_funDec(Tr_exp body);
 
 Tr_exp Tr_StaticLink(Tr_level now, Tr_level def);
 
-Tr_expList Tr_ExpList(Tr_exp head , Tr_expList tail);
+Tr_expList Tr_ExpList(Tr_exp head, Tr_expList tail);
 void Tr_FreeExpList(Tr_expList list);
 
 void Tr_procEntryExit(Tr_level level, Tr_exp body, Tr_accesslist formals);

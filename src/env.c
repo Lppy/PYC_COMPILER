@@ -45,3 +45,21 @@ bool isTyequTy(Ty_ty s1, Ty_ty s2)
     }
     return TRUE;
 }
+
+static S_table base_tenv = NULL;
+S_table E_base_tenv()
+{
+    if(!base_tenv){
+        base_tenv = S_empty();
+    }
+    return base_tenv;
+}
+
+static S_table base_venv = NULL;
+S_table E_base_venv()
+{
+    if(!base_venv){
+        base_venv = S_empty();
+    }
+    return base_venv;
+}
