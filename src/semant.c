@@ -12,16 +12,17 @@ struct expty expTy(Tr_exp exp, Ty_ty ty){
 T_stm transDecList(A_decList prog){
     S_table venv = E_base_venv(), tenv = E_base_tenv();
     Tr_level level = Tr_newLevel(NULL, Temp_namedlabel("root"), NULL);
-    Tr_expList tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);
+    Tr_expList tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), NULL);printf("transDecList\n");
     prog = prog->tail;
     while(prog){
         tmp = Tr_ExpList(transDec(venv, tenv, prog->head, level), tmp);
+        prog = prog->tail;
     }
     return Tr_mergeExpList(tmp);
 }
 
 struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
-    static bool done  = FALSE;
+    static bool done  = FALSE;printf("transExp\n");
     if(exp == NULL) assert(0);
     switch(exp->kind){
     case A_varExp:
@@ -279,6 +280,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
 }
 
 struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
+    printf("transVar\n");
     switch(var->kind){
     case A_simpleVar:
         {
@@ -321,6 +323,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_level level) {
 }
 
 Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
+    printf("transDec\n");
     switch(dec->kind){
     case A_functionDec:
         {
@@ -334,6 +337,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             U_boolList boollist = NULL;
             Ty_ty res = NULL;
             Ty_tyList tylist = NULL;
+            Temp_label label = Temp_namedlabel(name->name);
 
             E_enventry funEntry;
             Tr_accesslist tr_acceselist, tmpacclist;
@@ -349,12 +353,12 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             }
             if(innerIdentifiers(name))
                 type_error(dec->pos, "cannot use inner type as function name");
-            newlevel = Tr_newLevel(level, Temp_newlabel(), boollist);
+            newlevel = Tr_newLevel(level, label, boollist);
             // res = (Ty_ty)S_look(tenv, result);
             res = transTy(tenv, result);
             if(!res)
                 type_error(dec->pos, "unknown return type");
-            funEntry = E_FunEntry(tylist, res, newlevel->frame->name, newlevel);//
+            funEntry = E_FunEntry(tylist, res, label, newlevel);//
             S_enter(venv, name, funEntry);
             //U_ClearBoolList(boollist);
 
@@ -384,13 +388,20 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             while(vars){
                 A_efield var = vars->head;
                 Tr_access acc = Tr_allocLocal(level, dec->u.var.escape);
-                struct expty tmp = transExp(venv, tenv, var->exp, level);
-                Tr_ExpList(tmp.exp, initList);
-                Tr_Accesslist(acc, accList);
-                if(!isTyequTy(transTy(tenv, dec->u.var.typ), tmp.ty))
-                    type_error(dec->pos, "variable type not matched");
+                struct expty tmp;
+                if(var->exp){
+                    tmp = transExp(venv, tenv, var->exp, level);
+                    initList = Tr_ExpList(tmp.exp, initList);
+                    if(!isTyequTy(transTy(tenv, dec->u.var.typ), tmp.ty))
+                        type_error(dec->pos, "variable type not matched");
+                }
+                else{
+                    initList = Tr_ExpList(NULL, initList);
+                    
+                }
+                accList = Tr_Accesslist(acc, accList);
                 if(!S_look(venv, var->name));
-                S_enter(venv, var->name, E_VarEntry(acc, tmp.ty));
+                S_enter(venv, var->name, E_VarEntry(acc, transTy(tenv, dec->u.var.typ)));
                 vars=vars->tail;
             }
             return Tr_varDec(accList, initList);
@@ -425,6 +436,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
 
 Ty_ty transTy(S_table tenv, A_ty ty)
 {
+    printf("transTy\n");
     switch(ty->kind)
     {
     case A_nameTy:

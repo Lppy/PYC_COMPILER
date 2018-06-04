@@ -221,7 +221,7 @@ Tr_exp Tr_intExp(int i)
 
 Tr_exp Tr_floatExp(float f)
 {
-    return Tr_Ex(T_Const((int)f));
+    return Tr_Ex(T_Const(*(int*)&f));
 }
 
 Tr_exp Tr_charExp(char c)
@@ -566,13 +566,20 @@ Tr_exp Tr_returnExp(Tr_exp res)
 
 Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)
 {
-    T_stm stm = Tr_unNx(Tr_Ex(T_Const(0)));
+    T_stm stm;// = Tr_unNx(Tr_Ex(T_Const(0)));
     T_exp tmp = T_Temp(F_FP());
     T_exp memt; 
+    int flag = 0;
     while(accList != NULL && initList != NULL){
         memt = F_Exp(accList->head->access, tmp);
-        if(initList->head)
-            stm = T_Seq(stm, T_Move(memt, Tr_unEx(initList->head)));
+        if(initList->head){
+            if(flag)
+                stm = T_Seq(stm, T_Move(memt, Tr_unEx(initList->head)));
+            else{
+                stm = T_Move(memt, Tr_unEx(initList->head));
+                flag = 1;
+            }
+        }
         accList = accList->tail;
         initList = initList->tail;
     }
