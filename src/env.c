@@ -9,14 +9,14 @@ E_enventry E_VarEntry(Tr_access acc, Ty_ty ty)
     return p;
 }
 
-E_enventry E_FunEntry(Ty_tyList formals, Ty_ty reslut, Temp_label label, Tr_level level)
+E_enventry E_FunEntry(Ty_fieldList formals, Ty_ty reslut, Temp_label label, U_boolList boollist)
 {
     E_enventry p = (E_enventry)checked_malloc(sizeof(*p)) ;
     p->kind = E_funEntry;
     p->u.fun.formals = formals;
     p->u.fun.result = reslut;
     p->u.fun.label = label;
-    p->u.fun.level = level;
+    p->u.fun.boollist = boollist;
     return p;
 }
 
