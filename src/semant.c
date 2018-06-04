@@ -167,7 +167,9 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
         }
     case A_ifExp:
         {
-            struct expty tmptest = transExp(venv, tenv, exp->u.iff.test, level);
+            struct expty tmptest;
+            S_beginScope(venv);
+            tmptest = transExp(venv, tenv, exp->u.iff.test, level);
             if(!Ty_IsNum(tmptest.ty))
                 type_error(exp->pos, "the type is not interpretable");
             struct expty tmpthen = transExp(venv, tenv, exp->u.iff.then, level);
@@ -179,24 +181,29 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             }
             if(tmpthen.ty->kind != Ty_void)
                 type_error(exp->pos, "if error");
+            S_endScope(venv);
             return expTy(Tr_ifExp(tmptest.exp, tmpthen.exp, NULL), Ty_Void());
         }
     case A_whileExp:
         {
-            struct expty test = transExp(venv, tenv, exp->u.whilee.test, level);
+            struct expty test;
+            S_beginScope(venv);
+            test = transExp(venv, tenv, exp->u.whilee.test, level);
             if(!Ty_IsNum(test.ty))
                 type_error(exp->pos, "the type is not interpretable");
             struct expty body = transExp(venv, tenv, exp->u.whilee.body, level);
             if(done) done = FALSE;
+            S_endScope(venv);
             return expTy(Tr_whileExp(test.exp, body.exp, FALSE), Ty_Void());
         }
     case A_forExp:
         {
-            // S_beginScope(venv);
-            struct expty tmpe1 = transExp(venv, tenv, exp->u.forr.e1, level);
-            struct expty tmpe2 = transExp(venv, tenv, exp->u.forr.e2, level);
-            struct expty tmpe3 = transExp(venv, tenv, exp->u.forr.e3, level);
-            struct expty tmpbody = transExp(venv, tenv, exp->u.forr.body, level);
+            struct expty tmpe1, tmpe2, tmpe3, tmpbody;
+            S_beginScope(venv);
+            tmpe1 = transExp(venv, tenv, exp->u.forr.e1, level);
+            tmpe2 = transExp(venv, tenv, exp->u.forr.e2, level);
+            tmpe3 = transExp(venv, tenv, exp->u.forr.e3, level);
+            tmpbody = transExp(venv, tenv, exp->u.forr.body, level);
             // Tr_access acc;
             // acc = Tr_allocLocal(level, exp->u.forr.e2);
             // S_enter(venv, exp->u.forr.var, E_VarEntry(acc ,Ty_Int()));
@@ -204,7 +211,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_level level){
             //     assert(0);
             if(!Ty_IsNum(tmpe2.ty))
                 type_error(exp->pos, "the type is not interpretable");
-            // S_endScope(venv);
+            S_endScope(venv);
             return expTy(Tr_forExp(tmpe1.exp, tmpe2.exp, tmpe2.exp, tmpbody.exp), Ty_Void());
         }
     case A_breakExp:
@@ -337,7 +344,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             if(!res)
                 type_error(dec->pos, "unknown return type");
             funEntry = E_FunEntry(tylist, res, newlevel->frame->name, newlevel);//
-            S_enter(venv, S_Symbol(name), funEntry);
+            S_enter(venv, name, funEntry);
             //U_ClearBoolList(boollist);
 
             S_beginScope(venv);
@@ -346,7 +353,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
             while(para){
                 // Ty_ty ty =(Ty_ty)S_look(tenv, para->head->typ);
                 Ty_ty ty = transTy(tenv, para->head->typ);
-                S_enter(venv, S_Symbol(name), E_VarEntry(tmpacclist->head, ty));
+                S_enter(venv, name, E_VarEntry(tmpacclist->head, ty));
                 para = para->tail;
                 tmpacclist = tmpacclist->tail;
             }
@@ -371,6 +378,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
                 Tr_Accesslist(acc, accList);
                 if(!isTyequTy(transTy(tenv, dec->u.var.typ), tmp.ty))
                     type_error(dec->pos, "variable type not matched");
+                if(!S_look(venv, var->name));
                 S_enter(venv, var->name, E_VarEntry(acc, tmp.ty));
                 vars=vars->tail;
             }
