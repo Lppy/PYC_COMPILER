@@ -27,7 +27,7 @@ struct F_access_ {
 };
 
 struct F_accesslist_ { F_access head; F_accesslist tail; };
-/*
+
 struct F_frag_ {
     enum { F_stringFrag, F_procFrag } kind ;
     union {
@@ -41,7 +41,7 @@ struct F_fragList_{  F_frag head; F_fragList tail; };
 F_frag F_StringFrag(Temp_label label, string str);
 F_frag F_ProcFrag (T_stm stm, F_frame frame);
 F_fragList F_FragList(F_frag frag, F_fragList tail);
-*/
+
 Temp_temp F_FP(void);   
 Temp_temp F_RV(void);  
 
