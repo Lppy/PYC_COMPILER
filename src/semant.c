@@ -201,7 +201,11 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
             struct expty tmpV = transVar(venv, tenv, exp->u.assign.var, frame);
             struct expty tmpE = transExp(venv, tenv, exp->u.assign.exp, frame);
             if(tmpV.ty->kind == Ty_array){
-                if((!Ty_IsNum(Ty_targetTy(tmpV.ty))) || (!Ty_IsNum(tmpE.ty)))
+                if(tmpE.ty->kind == Ty_array){
+                    if(Ty_targetTy(tmpE.ty)->kind != Ty_targetTy(tmpV.ty)->kind)
+                        type_error(exp->pos, "only of same type or structs are assignable");
+                }
+                else if((!Ty_IsNum(Ty_targetTy(tmpV.ty))) || (!Ty_IsNum(tmpE.ty)))
                     if(Ty_targetTy(tmpV.ty)->u.structt.sym != tmpE.ty->u.structt.sym)
                         type_error(exp->pos, "only of same type or structs are assignable");
             }
@@ -306,7 +310,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
     case A_returnExp:
         {
             struct expty tmp = transExp(venv, tenv, exp->u.returnn.res, frame);
-            tmp = expTy(Tr_returnExp(tmp.exp), tmp.ty);
+            tmp = expTy(Tr_returnExp(tmp.exp), Ty_targetTy(tmp.ty));
             return tmp;
         }
     default: assert(0);
