@@ -1,6 +1,8 @@
 #include "translate.h"
 #include "env.h"
 
+const int FRAME_SIZE = 4*1024;
+
 T_stm Tr_mergeExpList(Tr_expList list)
 {
     Temp_label main = Temp_namedlabel("main");
@@ -14,17 +16,17 @@ T_stm Tr_mergeExpList(Tr_expList list)
     return stm;
 }
 
-Tr_access Tr_allocLocal(Tr_level level, bool escape)
+Tr_access Tr_allocLocal(Tr_frame frame, bool escape)
 {
     F_access acc;
-    acc = F_allocLoacl(level->frame, escape);
-    return Tr_Access(level, acc);
+    acc = F_allocLocal(frame->frame, escape);
+    return Tr_Access(frame, acc);
 }
 
-Tr_access Tr_Access(Tr_level level, F_access access)
+Tr_access Tr_Access(Tr_frame frame, F_access access)
 {
     Tr_access acc = (Tr_access)checked_malloc(sizeof(*acc));
-    acc->level = level;
+    acc->frame = frame;
     acc->access = access;
     return acc;
 }
@@ -37,59 +39,47 @@ Tr_accesslist Tr_Accesslist(Tr_access head, Tr_accesslist tail)
     return tmp;
 }
 
-Tr_level Tr_newLevel(Tr_level parent, Temp_label name, U_boolList formals)
+Tr_frame Tr_newFrame(Tr_frame parent, Temp_label name, U_boolList formals)
 {
-    Tr_level level = (Tr_level)checked_malloc(sizeof(*level));
-    level->parent = parent;
-    level->frame = F_newframe(name, U_BoolList(TRUE, formals));
-    return level;
+    Tr_frame frame = (Tr_frame)checked_malloc(sizeof(*frame));
+    frame->parent = parent;
+    frame->frame = F_newframe(name, U_BoolList(TRUE, formals));
+    return frame;
 }
 
-Tr_accesslist Tr_formals(Tr_level level)
+Tr_accesslist Tr_formals(Tr_frame frame)
 {
-    F_accesslist f_acc = level->frame->formals;
+    F_accesslist f_acc = frame->frame->formals;
     f_acc = f_acc->tail;
     Tr_accesslist tmp = NULL;
     while(f_acc)
     {
-         tmp = Tr_Accesslist(Tr_Access(level, f_acc->head), tmp);
+         tmp = Tr_Accesslist(Tr_Access(frame, f_acc->head), tmp);
          f_acc = f_acc->tail;
     }
     return tmp;
 }
 
-Tr_level Tr_outermorst()
+/*
+Tr_frame Tr_outermorst()
 {
-    static Tr_level tmp = NULL;
+    static Tr_frame tmp = NULL;
     if (!tmp)
     {
-        tmp = (Tr_level)checked_malloc(sizeof(*tmp));
+        tmp = (Tr_frame)checked_malloc(sizeof(*tmp));
         U_boolList b = U_BoolList(TRUE, NULL);
         tmp->frame = F_newframe(Temp_newlabel(), b);
         tmp->parent = NULL;
     }
     return tmp;
 }
+*/
 
 //------------------------
 
 void Tr_ClearAcces(Tr_accesslist list)
 {
     Tr_accesslist tmp;
-    tmp = list;
-    while(list)
-    {
-        list = list->tail;
-        tmp->head = NULL;
-        tmp->tail = NULL;
-        free(tmp);
-        tmp = list;
-    }
-}
-
-void Tr_FreeExpList(Tr_expList list)
-{
-    Tr_expList tmp;
     tmp = list;
     while(list)
     {
@@ -238,13 +228,13 @@ Tr_exp Tr_stringExp(string s)
     return Tr_Ex(T_Name(slabel));
 }
 
-Tr_exp Tr_simpleVar(Tr_access acc, Tr_level level)
+Tr_exp Tr_simpleVar(Tr_access acc, Tr_frame frame)
 {
     T_exp tmp = T_Temp(F_FP());
-    while(level && level!=acc->level->parent)
+    while(frame && frame!=acc->frame->parent)
     {
-        tmp = T_Mem(T_Binop(T_plus, T_Const(level->frame->formals->head->u.offset), tmp));
-        level = level->parent;
+        tmp = T_Mem(T_Binop(T_plus, T_Const(frame->frame->formals->head->u.offset), tmp));
+        frame = frame->parent;
     }
     return Tr_Ex(F_Exp(acc->access, tmp));
 }
@@ -259,13 +249,13 @@ Tr_exp Tr_fieldVar(Tr_exp base, int offset)
     return Tr_Ex(T_Mem(T_Binop(T_plus, Tr_unEx(base), T_Const(offset*F_wordSize))));
 }
 
-Tr_exp Tr_addressVar(Tr_access acc, Tr_level level)
+Tr_exp Tr_addressVar(Tr_access acc, Tr_frame frame)
 {
     T_exp tmp = T_Temp(F_FP());
-    while(level && level!=acc->level->parent)
+    while(frame && frame!=acc->frame->parent)
     {
-        tmp = T_Mem(T_Binop(T_plus, T_Const(level->frame->formals->head->u.offset), tmp));
-        level = level->parent;
+        tmp = T_Mem(T_Binop(T_plus, T_Const(frame->frame->formals->head->u.offset), tmp));
+        frame = frame->parent;
     }
     return Tr_Ex(F_AddressExp(acc->access, tmp));
 }
@@ -551,17 +541,11 @@ Tr_exp Tr_switchExp(Tr_expList bodyList)
 Tr_exp Tr_returnExp(Tr_exp res)
 {
     T_exp tmp = T_Temp(F_RV());
-    /*
-    Temp_label label = F_RA();
+    T_stm stm = T_Move(T_Temp(F_FP()), T_Mem(T_Binop(T_plus, T_Temp(F_FP()), T_Const(0))));
     if(res)
-        return Tr_unNx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Jump(T_Name(label), Temp_LabelList(label, NULL))));
+        return Tr_Nx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Seq(stm, T_Ret())));
     else
-        return Tr_unNx(T_Jump(T_Name(label), Temp_LabelList(label, NULL)));
-    */
-    if(res)
-        return Tr_Nx(T_Move(tmp, Tr_unEx(res)));
-    else
-        return Tr_Nx(T_Move(tmp, T_Const(0)));
+        return Tr_Nx(T_Seq(stm, T_Ret()));
 }
 
 Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)
@@ -594,7 +578,7 @@ Tr_exp Tr_structDec(Tr_access acc, Tr_exp init)
     return Tr_Ex(T_Const(0));
 }
 
-Tr_exp Tr_funDec(Tr_exp body)
+Tr_exp Tr_funDec(Temp_label label, Tr_exp body)
 {
     /*
     T_stm stm;
@@ -605,10 +589,10 @@ Tr_exp Tr_funDec(Tr_exp body)
       stm = T_Seq(T_Move(T_Temp(F_RV()) , Tr_unEx(bodylist->head)) , stm);
     }
     */
-    return Tr_Nx(Tr_unNx(body));
+    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Name(F_FP()), T_BinOp(T_plus, T_Name(F_FP()), T_Const(FRAME_SIZE))), Tr_unNx(body))));
 }
 
-Tr_exp Tr_callExp(Temp_label label, Tr_level funleve, Tr_level level, Tr_expList explist)
+Tr_exp Tr_callExp(Temp_label label, Tr_expList explist)
 {
     T_expList tmplist = NULL;
     while(explist)
@@ -616,12 +600,13 @@ Tr_exp Tr_callExp(Temp_label label, Tr_level funleve, Tr_level level, Tr_expList
         tmplist = T_ExpList(Tr_unEx(explist->head), tmplist);
         explist = explist->tail;
     }
-    tmplist = T_ExpList(Tr_unEx(Tr_StaticLink(funleve, level)), tmplist); //静态链为level的FP
-    T_exp callfun = T_Call(T_Name(label), tmplist);
+    tmplist = T_ExpList(T_Temp(F_FP()), tmplist); //静态链为frame的FP
+    T_exp callfun = T_Call(T_Name(label), tmplist); //call修改FP
     return Tr_Ex(callfun);
 }
 
- Tr_exp Tr_StaticLink(Tr_level now, Tr_level def)
+/*
+ Tr_exp Tr_StaticLink(Tr_frame now, Tr_frame def)
  {
     T_exp addr = T_Temp(F_FP());
     while(now && (now != def->parent)) 
@@ -632,10 +617,11 @@ Tr_exp Tr_callExp(Temp_label label, Tr_level funleve, Tr_level level, Tr_expList
     }
     return Tr_Ex(addr); //从now往前得到def的FP
 }
+*/
 
 
 /*
-Tr_exp Tr_callExp(E_enventry entry , Tr_level level , Tr_expList explist  ) 
+Tr_exp Tr_callExp(E_enventry entry , Tr_frame frame , Tr_expList explist  ) 
 {
     
      T_expList tmplist = NULL;
@@ -644,7 +630,7 @@ Tr_exp Tr_callExp(E_enventry entry , Tr_level level , Tr_expList explist  )
          tmplist = T_ExpList( Tr_unEx(explist->head) , tmplist);
          explist = explist->tail;
      }
-     tmplist = T_ExpList(Tr_unEx(Tr_StaticLink(entry->u.fun.level , level)) , tmplist);
+     tmplist = T_ExpList(Tr_unEx(Tr_StaticLink(entry->u.fun.frame , frame)) , tmplist);
     T_exp callfun = T_Call(T_Name(entry->u.fun.label) ,tmplist);
     return Tr_Ex(callfun);
 }

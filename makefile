@@ -8,7 +8,7 @@ objects = $(patsubst %.c,build/%.o,$(notdir ${sources})) build/y.tab.o
 parser: $(objects)
 	$(CC) -o $@ $(objects)
 
-build/%.o: src/%.c | build
+build/%.o: src/%.c include/%.h | build
 	$(CC) -o $@ -c $< -Iinclude
 
 build/y.tab.o: build/y.tab.c build/lex.yy.c

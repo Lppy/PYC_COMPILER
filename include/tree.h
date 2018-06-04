@@ -28,7 +28,7 @@ struct T_const_{
 */
 
 struct T_stm_ {
-	enum {T_SEQ, T_LABEL, T_JUMP, T_CJUMP, T_MOVE, T_EXP} kind;
+	enum {T_SEQ, T_LABEL, T_JUMP, T_CJUMP, T_MOVE, T_EXP, T_RET} kind;
 	union {
 		struct {T_stm left, right;} SEQ;
 		Temp_label LABEL;
@@ -67,6 +67,7 @@ T_stm T_Jump(T_exp exp, Temp_labelList labels);
 T_stm T_Cjump(T_relOp op, T_exp left, T_exp right, Temp_label trues, Temp_label falses);
 T_stm T_Move(T_exp dst, T_exp src);
 T_stm T_Exp(T_exp exp);
+T_stm T_Ret();
 
 T_exp T_Binop(T_binOp op, T_exp left, T_exp right);
 T_exp T_Mem(T_exp exp);
