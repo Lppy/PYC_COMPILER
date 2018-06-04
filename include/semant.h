@@ -4,6 +4,7 @@
 #include "types.h"
 #include "translate.h"
 #include "absyn.h"
+#include "frame.h"
 
 struct expty { Tr_exp exp; Ty_ty ty; };
 struct expty expTy(Tr_exp exp, Ty_ty ty);

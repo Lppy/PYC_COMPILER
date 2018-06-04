@@ -352,7 +352,14 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
         }
     case A_addressVar:
         {
-            
+            A_var thevar=var->u.address;
+            if(thevar->kind != A_simpleVar)
+                type_error(var->pos, "cannot get the address of a non-variable");
+            E_enventry tmp =(E_enventry)S_look(venv, thevar->u.simple);
+            if(tmp != NULL && tmp->kind == E_varEntry)
+                return expTy(Tr_addressVar(tmp->u.var.acc, frame), tmp->u.var.ty);
+            else
+                type_error(var->pos, "cannot get the address of a function");
         }
     default: 
         assert(0);
