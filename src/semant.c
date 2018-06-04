@@ -23,7 +23,7 @@ T_stm transDecList(A_decList prog){
         tnew = t;
     }
     prog = told;
-    tmp = Tr_ExpList(transDec(venv, tenv, prog->head, frame), NULL);printf("AAA");return NULL;
+    tmp = Tr_ExpList(transDec(venv, tenv, prog->head, frame), NULL);
     prog = prog->tail;
     while(prog){
         tmp = Tr_ExpList(transDec(venv, tenv, prog->head, frame), tmp);
