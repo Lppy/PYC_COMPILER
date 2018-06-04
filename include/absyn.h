@@ -68,7 +68,7 @@ struct A_dec_ {
 	union {
 		struct {S_symbol name; A_fieldList params; A_ty result; A_exp body;} function;
 		struct {A_efieldList varList; A_ty typ; bool escape;} var; /* escape may change after the initial declaration */
-		struct {S_symbol name; A_fieldList structure;} structt;
+		struct {A_ty typ; A_fieldList structure;} structt;
 	} u;
 };
 
@@ -135,7 +135,7 @@ A_efield A_Efield(S_symbol name, A_exp init);
 
 //struct declaration
 //---A_field A_Field(A_pos pos, S_symbol name, S_symbol typ);
-A_dec A_StructDec(A_pos pos, S_symbol name, A_fieldList structure);
+A_dec A_StructDec(A_pos pos, A_ty typ, A_fieldList structure);
 A_fieldList A_FieldList(A_field head, A_fieldList tail);
 A_fieldList A_MergeFieldList(A_fieldList head, A_fieldList tail);
 A_field A_Field(A_pos pos, S_symbol name, A_ty typ);

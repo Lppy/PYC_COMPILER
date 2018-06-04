@@ -388,12 +388,12 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
         {
             Ty_ty struct_ty; 
             A_fieldList tmp = dec->u.structt.structure;
-            if(innerIdentifiers(dec->u.structt.name) || S_look(tenv, dec->u.structt.name))
+            if(S_look(tenv, dec->u.structt.typ->u.name) || innerIdentifiers(dec->u.structt.typ->u.name))
             {
                 assert(0);
             }
-            S_enter(tenv, dec->u.structt.name, dec->u.structt.name);
-            struct_ty = transTy(tenv, dec->u.structt.name);
+            S_enter(tenv, dec->u.structt.typ->u.name, dec->u.structt.typ->u.name);
+            struct_ty = transTy(tenv, dec->u.structt.typ);
             if(tmp){
                 Ty_fieldList structure = Ty_FieldList(Ty_Field(tmp->head->name, transTy(tenv, tmp->head->typ)), NULL);
                 tmp = tmp->tail;
@@ -407,7 +407,6 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_level level){
                 struct_ty->u.structt.structure = NULL;
             return Tr_structDec();
         }
-
     }
     assert(0);
 }

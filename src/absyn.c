@@ -265,12 +265,12 @@ A_dec A_VarDec(A_pos pos, A_efieldList varList, A_ty typ)
 	return p;
 }
 
-A_dec A_StructDec(A_pos pos, S_symbol name, A_fieldList structure)
+A_dec A_StructDec(A_pos pos, A_ty typ, A_fieldList structure)
 {
 	A_dec p = checked_malloc(sizeof(*p));
 	p->kind=A_structDec;
 	p->pos=pos;
-	p->u.structt.name=name;
+	p->u.structt.typ=typ;
 	p->u.structt.structure=structure;
 	return p;
 }

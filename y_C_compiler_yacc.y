@@ -242,10 +242,10 @@ translation_unit
 external_declaration
         : function_definition {$$=$1;}
         | declaration {$$=$1;}
-        | STRUCT IDENTIFIER '{' struct_declaration_list '}' ';'{$$=A_StructDec(pos,S_Symbol($2),$4);}
+        | STRUCT IDENTIFIER '{' struct_declaration_list '}' ';'{$$=A_StructDec(pos,A_StructTy(S_Symbol($2)),$4);}
 
-        | STRUCT IDENTIFIER '{' struct_declaration_list '}' error {parse_error("unexpected ';'");} ';'{$$=A_StructDec(pos,S_Symbol($2),$4);}
-        | error {parse_error("unknown external declaration");} external_declaration {$$=$3;}
+        //| STRUCT IDENTIFIER '{' struct_declaration_list '}' error {parse_error("unexpected ';'");} ';'{$$=A_StructDec(pos,A_StructTy(S_Symbol($2)),$4);}
+        //| error {parse_error("unknown external declaration");} external_declaration {$$=$3;}
         ;
 
 //---A_dec
@@ -328,7 +328,7 @@ statement
         | selection_statement {$$=$1;}
         | iteration_statement {$$=$1;}
         | jump_statement {$$=$1;}
-        | error {parse_error("illegal statement");} statement {$$=$3;}
+        //| error {parse_error("illegal statement");} statement {$$=$3;}
         ;
 
 /*
