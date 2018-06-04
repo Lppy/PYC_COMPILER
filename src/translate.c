@@ -589,7 +589,7 @@ Tr_exp Tr_funDec(Temp_label label, Tr_exp body)
       stm = T_Seq(T_Move(T_Temp(F_RV()) , Tr_unEx(bodylist->head)) , stm);
     }
     */
-    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Name(F_FP()), T_BinOp(T_plus, T_Name(F_FP()), T_Const(FRAME_SIZE))), Tr_unNx(body))));
+    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE))), Tr_unNx(body))));
 }
 
 Tr_exp Tr_callExp(Temp_label label, Tr_expList explist)
