@@ -47,6 +47,9 @@ static void pr_stm(FILE *out, T_stm stm, int d)
 		indent(out, d); fprintf(out, "EXP(\n"); 
 		pr_tree_exp(out, stm->u.EXP, d+1); fprintf(out, ")");
 		break;
+	case T_RET:
+		indent(out, d); fprintf(out, "RETURN()"); 
+		break;
 	}
 }
 
