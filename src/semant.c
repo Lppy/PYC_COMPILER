@@ -29,13 +29,13 @@ T_stm transDecList(A_decList prog){
         tmp = Tr_ExpList(transDec(venv, tenv, prog->head, frame), tmp);
         prog = prog->tail;
     }
-    S_endScope(venv);
-    S_endScope(tenv);
     E_enventry main_fun = (E_enventry)S_look(venv, S_Symbol("main"));
     if(!main_fun || main_fun->kind == E_varEntry) {
         fprintf(stderr, "There is not main function!\n");
         assert(0);
     }
+    S_endScope(venv);
+    S_endScope(tenv);
     return Tr_mergeExpList(tmp, main_fun->u.fun.label);
 }
 
