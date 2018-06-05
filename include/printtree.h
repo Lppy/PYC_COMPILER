@@ -6,6 +6,6 @@
 #include "temp.h"
 #include "tree.h"
 
-void printStmList(FILE *out, T_stmList stmList);
+void printProg(FILE *out, T_stm stm);
 
 #endif

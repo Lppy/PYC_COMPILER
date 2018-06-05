@@ -403,7 +403,9 @@ int main(){
     int res = yyparse();
     //pr_decList(stdout, PARSE_RES, 0);
     T_stm resTree = transDecList(PARSE_RES);
-    printStmList(stdout, T_StmList(resTree, NULL));
+    FILE *fp = fopen("visualization/data.json", "w");
+    printProg(fp, resTree);
+    fclose(fp);
     return 0;
 }
 
