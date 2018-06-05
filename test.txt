@@ -29,7 +29,7 @@ int main(int c){
 
 int main(){
 	int[2] a;
-	return a;
+	return a[1];
 }#
 
 ///

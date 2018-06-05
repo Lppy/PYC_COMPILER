@@ -404,11 +404,26 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                         exp = Tr_addressVar(Tr_Access(frame, calculed) , frame);
                     }
                     break;
-                case A_subscriptVar:
-                    assert(0);
+                case A_subscriptVar:{
+                    type_error(var->pos, "not supported");
+                    env = (E_enventry)S_look(venv, S_Symbol(thevar->u.subscript.var->u.simple->name));
+                    if(!env) break;
+                    struct expty index = transExp(venv, tenv, thevar->u.subscript.exp, frame);
+                    if(!isTyequTy(index.ty, Ty_Int()))
+                        type_error(var->pos, "the index must be an integer");
+                    else{
+                        F_access calculed=checked_malloc(sizeof(calculed));
+                        calculed->kind=inFrame;
+                        calculed->u.offset=env->u.var.acc->access->u.offset + num;
+                        ret_ty = list->head->ty;
+                        //                        exp = Tr_addressVar(acc, frame);
+                        exp = Tr_addressVar(Tr_Access(frame, calculed) , frame);
+                    }
+
                     env = (E_enventry)S_look(venv, thevar->u.subscript.var->u.simple);
                     thevar = thevar->u.subscript.var;
                     ret_ty = Ty_targetTy(transVar(venv, tenv, thevar, frame).ty);
+                }
                 default:
                     type_error(var->pos, "cannot get the address of a non-variable");
             }
@@ -511,7 +526,7 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
                         num++;
                     }
                     sv_alloc_bind=alloc_bind;
-                    alloc_bind = num;
+                    alloc_bind *= num;
                     first_acc = Tr_allocLocal(frame, dec->u.var.escape);
                     alloc_bind = sv_alloc_bind;
                     accList = Tr_Accesslist(first_acc, accList);
@@ -522,7 +537,12 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
             }
             while(vars){
                 A_efield var = vars->head;
+                int sv_alloc_bind;
+                sv_alloc_bind=alloc_bind;
+                if(dec->u.var.typ->kind == A_arrayTy)
+                    alloc_bind *= dec->u.var.typ->u.array.length;
                 Tr_access acc = Tr_allocLocal(frame, dec->u.var.escape);
+                alloc_bind = sv_alloc_bind;
                 struct expty tmp;
                 if(var->exp){
                     tmp = transExp(venv, tenv, var->exp, frame);
