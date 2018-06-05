@@ -180,7 +180,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
             Tr_expList trexplist = NULL;
             Ty_ty tmp = NULL; int flag = 0;
             if(explist){
-                while(explist->tail){
+                while(explist){
                     struct expty t = transExp(venv, tenv, explist->head, frame);
                     trexplist = Tr_ExpList(t.exp, trexplist);
                     if(!flag){
@@ -192,7 +192,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
             } else{
                 return expTy(Tr_seqExp(trexplist), Ty_Void());
             }
-            trexplist = Tr_ExpList(transExp(venv, tenv, explist->head, frame).exp, trexplist);
+//            trexplist = Tr_ExpList(transExp(venv, tenv, explist->head, frame).exp, trexplist);
             //Tr_FreeExpList(trexplist); //只释放链表结构 不是放内容(hand)
             return expTy(Tr_seqExp(trexplist), tmp);
         }
@@ -310,7 +310,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
     case A_returnExp:
         {
             struct expty tmp = transExp(venv, tenv, exp->u.returnn.res, frame);
-            tmp = expTy(Tr_returnExp(tmp.exp), Ty_targetTy(tmp.ty));
+            tmp = expTy(Tr_returnExp(tmp.exp), tmp.ty);
             return tmp;
         }
     default: assert(0);
@@ -342,7 +342,8 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                 num++;
                 fieldList = fieldList->tail;
             }
-            type_error(var->pos, "structure %s, does not have such a component", S_name(var->u.field.var->u.simple));
+            type_error(var->pos, "structure %s, does not have field %s", \
+                       S_name(var->u.field.var->u.simple), S_name(var->u.field.sym));
         }
     case A_subscriptVar:
         {
@@ -352,18 +353,61 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                 type_error(var->pos, "not a pointer type");
             if(tmpexp.ty->kind != Ty_int && tmpexp.ty->kind != Ty_char)
                 type_error(var->pos, "the index is not integer");
-            return expTy(Tr_subscriptVar(tmpvar.exp ,tmpexp.exp), tmpvar.ty);
+            return expTy(Tr_subscriptVar(tmpvar.exp ,tmpexp.exp), tmpvar.ty->u.array.ty);
         }
     case A_addressVar:
         {
             A_var thevar=var->u.address;
-            if(thevar->kind != A_simpleVar)
-                type_error(var->pos, "cannot get the address of a non-variable");
-            E_enventry tmp =(E_enventry)S_look(venv, thevar->u.simple);
-            if(tmp != NULL && tmp->kind == E_varEntry)
-                return expTy(Tr_addressVar(tmp->u.var.acc, frame), tmp->u.var.ty);
-            else
+            E_enventry env;
+            Ty_ty ret_ty;
+            Tr_exp exp;
+            Ty_fieldList list;
+            bool found=FALSE;
+            int num = 0;
+            Tr_access acc;
+            
+            switch(thevar->kind){
+                case A_simpleVar:
+                    env = (E_enventry)S_look(venv, thevar->u.simple);
+                    if(!env) break;
+                    ret_ty = env->u.var.ty;
+                    exp = Tr_addressVar(env->u.var.acc, frame);
+                    break;
+                case A_fieldVar:    // &(a.b), thevar=a.b
+                    env = (E_enventry)S_look(venv, thevar->u.field.sym); // find for symbol a
+                    if(!env) break;
+                    list = env->u.var.ty->u.structt.structure;  // check whether b is a field of a
+                    while(list && (!found)){
+                        if(0==strcmp(S_name(list->head->name), S_name(thevar->u.field.sym))){
+                            found=TRUE;
+                            break;
+                        }
+                        list = list->tail;
+                        num++;
+                    }
+                    if(!found)
+                        type_error(var->pos, "struct %s does not have a field %s", \
+                        S_name(env->u.var.ty->u.structt.sym), S_name(thevar->u.field.sym));
+                    else{
+                        ret_ty = list->head->ty;
+                        exp = Tr_addressVar(acc, frame);
+//                        exp = Tr_addressVar(env->u.var.acc, frame);
+                    }
+                    break;
+                case A_subscriptVar:
+                    assert(0);
+                    env = (E_enventry)S_look(venv, thevar->u.subscript.var->u.simple);
+                    thevar = thevar->u.subscript.var;
+                    ret_ty = Ty_targetTy(transVar(venv, tenv, thevar, frame).ty);
+                default:
+                    type_error(var->pos, "cannot get the address of a non-variable");
+            }
+            if(!env)
+                type_error(var->pos, "variable not found");
+            else if(env->kind == E_funEntry)
                 type_error(var->pos, "cannot get the address of a function");
+            else
+                return expTy(exp, ret_ty);
         }
     default: 
         assert(0);
@@ -466,10 +510,8 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
             Ty_ty struct_ty; 
             A_fieldList tmp = dec->u.structt.structure;
             if(S_look(tenv, dec->u.structt.typ->u.name) || innerIdentifiers(dec->u.structt.typ->u.name))
-            {
                 assert(0);
-            }
-            S_enter(tenv, dec->u.structt.typ->u.name, dec->u.structt.typ->u.name);
+            S_enter(tenv, dec->u.structt.typ->u.name, Ty_Struct(dec->u.structt.typ->u.name, NULL));
             struct_ty = transTy(tenv, dec->u.structt.typ);
             if(tmp){
                 Ty_fieldList structure = Ty_FieldList(Ty_Field(tmp->head->name, transTy(tenv, tmp->head->typ)), NULL);
