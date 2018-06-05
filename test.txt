@@ -69,6 +69,7 @@ int main(){
 	sb.a = 1;
 	sb.b = &sb.a;
 	sb.c = &(sb.b);
+	return 0;
 }#
 
 

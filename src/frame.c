@@ -3,6 +3,8 @@
 const int offset = -4;
 const int F_wordSize = 4;
 
+int alloc_bind = 1;
+
 static Temp_temp fp = NULL;
 Temp_temp F_FP()
 {
@@ -41,7 +43,7 @@ F_access F_allocLocal(F_frame f, bool escape)
 
 F_access InFrame(int offset)
 {
-    F_access tmp = (F_access) checked_malloc(sizeof(*tmp));
+    F_access tmp = (F_access) checked_malloc(alloc_bind*sizeof(*tmp));
     tmp->kind = inFrame;
     tmp->u.offset = offset;
     return tmp;

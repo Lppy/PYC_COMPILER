@@ -3,6 +3,9 @@
 #include "env.h"
 #include "error.h"
 
+extern const int offset;
+extern int alloc_bind;
+
 struct expty expTy(Tr_exp exp, Ty_ty ty){
     struct expty e;
     e.exp=exp;e.ty=ty;
@@ -358,13 +361,12 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
     case A_addressVar:
         {
             A_var thevar=var->u.address;
-            E_enventry env;
+            E_enventry env = NULL;
             Ty_ty ret_ty;
-            Tr_exp exp;
+            Tr_exp exp = NULL;
             Ty_fieldList list;
             bool found=FALSE;
             int num = 0;
-            Tr_access acc;
             
             switch(thevar->kind){
                 case A_simpleVar:
@@ -374,7 +376,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                     exp = Tr_addressVar(env->u.var.acc, frame);
                     break;
                 case A_fieldVar:    // &(a.b), thevar=a.b
-                    env = (E_enventry)S_look(venv, thevar->u.field.sym); // find for symbol a
+                    env = (E_enventry)S_look(venv, S_Symbol(thevar->u.field.var->u.simple->name)); // find for symbol a
                     if(!env) break;
                     list = env->u.var.ty->u.structt.structure;  // check whether b is a field of a
                     while(list && (!found)){
@@ -389,9 +391,12 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                         type_error(var->pos, "struct %s does not have a field %s", \
                         S_name(env->u.var.ty->u.structt.sym), S_name(thevar->u.field.sym));
                     else{
+                        F_access calculed=checked_malloc(sizeof(calculed));
+                        calculed->kind=inFrame;
+                        calculed->u.offset=env->u.var.acc->access->u.offset + num;
                         ret_ty = list->head->ty;
 //                        exp = Tr_addressVar(acc, frame);
-                        exp = Tr_addressVar(env->u.var.acc + num, frame);
+                        exp = Tr_addressVar(Tr_Access(frame, calculed) , frame);
                     }
                     break;
                 case A_subscriptVar:
@@ -490,18 +495,20 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
                     Ty_ty type;
                     Ty_fieldList list;
                     Tr_access first_acc;
-                    int num=0;
+                    int num=0, sv_alloc_bind;
                     if(var->exp)
                         type_error(dec->pos, "struct type can not be initialized when declared");
                     type = (Ty_ty)S_look(tenv, dec->u.var.typ->u.name); // find for the symbol
                     if(!type) type_error(dec->pos, "no such struct declared");
                     list = type->u.structt.structure;
-                    first_acc = Tr_allocLocal(frame, dec->u.var.escape);
                     while(list->tail){          //allocate access for each field
                         list = list->tail;
                         num++;
-                        Tr_allocLocal(frame, dec->u.var.escape);
                     }
+                    sv_alloc_bind=alloc_bind;
+                    alloc_bind = num;
+                    first_acc = Tr_allocLocal(frame, dec->u.var.escape);
+                    alloc_bind = sv_alloc_bind;
                     accList = Tr_Accesslist(first_acc, accList);
                     S_enter(venv, var->name, E_VarEntry(first_acc, transTy(tenv, dec->u.var.typ)));
                     vars=vars->tail;
