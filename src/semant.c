@@ -390,8 +390,8 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                         S_name(env->u.var.ty->u.structt.sym), S_name(thevar->u.field.sym));
                     else{
                         ret_ty = list->head->ty;
-                        exp = Tr_addressVar(acc, frame);
-//                        exp = Tr_addressVar(env->u.var.acc, frame);
+//                        exp = Tr_addressVar(acc, frame);
+                        exp = Tr_addressVar(env->u.var.acc + num, frame);
                     }
                     break;
                 case A_subscriptVar:
