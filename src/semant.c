@@ -31,7 +31,10 @@ T_stm transDecList(A_decList prog){
     }
     S_endScope(venv);
     S_endScope(tenv);
-    return Tr_mergeExpList(tmp);
+    E_enventry main_fun = (E_enventry)S_look(venv, S_Symbol("main"));
+    if(!main_fun || main_fun->kind == E_varEntry)
+        type_error(0, "There is not main function!");
+    return Tr_mergeExpList(tmp, main_fun->u.fun.label);
 }
 
 struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
