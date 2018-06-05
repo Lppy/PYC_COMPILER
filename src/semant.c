@@ -484,6 +484,30 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
             Tr_expList initList = NULL;
             Tr_accesslist accList = NULL;
             if(!vars)assert(0);
+            if(dec->u.var.typ->kind == A_structTy){
+                while(vars){
+                    A_efield var = vars->head;
+                    Ty_ty type;
+                    Ty_fieldList list;
+                    Tr_access first_acc;
+                    int num=0;
+                    if(var->exp)
+                        type_error(dec->pos, "struct type can not be initialized when declared");
+                    type = (Ty_ty)S_look(tenv, dec->u.var.typ->u.name); // find for the symbol
+                    if(!type) type_error(dec->pos, "no such struct declared");
+                    list = type->u.structt.structure;
+                    first_acc = Tr_allocLocal(frame, dec->u.var.escape);
+                    while(list->tail){          //allocate access for each field
+                        list = list->tail;
+                        num++;
+                        Tr_allocLocal(frame, dec->u.var.escape);
+                    }
+                    accList = Tr_Accesslist(first_acc, accList);
+                    S_enter(venv, var->name, E_VarEntry(first_acc, transTy(tenv, dec->u.var.typ)));
+                    vars=vars->tail;
+                }
+                return Tr_varDec(accList, initList);
+            }
             while(vars){
                 A_efield var = vars->head;
                 Tr_access acc = Tr_allocLocal(frame, dec->u.var.escape);
