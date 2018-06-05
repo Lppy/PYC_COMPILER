@@ -367,7 +367,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
         {
             A_var thevar=var->u.address;
             E_enventry env = NULL;
-            Ty_ty ret_ty;
+            Ty_ty ret_ty = NULL;
             Tr_exp exp = NULL;
             Ty_fieldList list;
             bool found=FALSE;
@@ -411,18 +411,18 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                     struct expty index = transExp(venv, tenv, thevar->u.subscript.exp, frame);
                     if(!isTyequTy(index.ty, Ty_Int()))
                         type_error(var->pos, "the index must be an integer");
-                    else{
-                        F_access calculed=checked_malloc(sizeof(calculed));
-                        calculed->kind=inFrame;
-                        calculed->u.offset=env->u.var.acc->access->u.offset + num;
-                        ret_ty = list->head->ty;
-                        //                        exp = Tr_addressVar(acc, frame);
-                        exp = Tr_addressVar(Tr_Access(frame, calculed) , frame);
-                    }
-
-                    env = (E_enventry)S_look(venv, thevar->u.subscript.var->u.simple);
-                    thevar = thevar->u.subscript.var;
-                    ret_ty = Ty_targetTy(transVar(venv, tenv, thevar, frame).ty);
+//                    else{
+//                        F_access calculed=checked_malloc(sizeof(calculed));
+//                        calculed->kind=inFrame;
+//                        calculed->u.offset=env->u.var.acc->access->u.offset + num;
+//                        ret_ty = list->head->ty;
+//                        //                        exp = Tr_addressVar(acc, frame);
+//                        exp = Tr_addressVar(Tr_Access(frame, calculed) , frame);
+//                    }
+//
+//                    env = (E_enventry)S_look(venv, thevar->u.subscript.var->u.simple);
+//                    thevar = thevar->u.subscript.var;
+//                    ret_ty = Ty_targetTy(transVar(venv, tenv, thevar, frame).ty);
                 }
                 default:
                     type_error(var->pos, "cannot get the address of a non-variable");
