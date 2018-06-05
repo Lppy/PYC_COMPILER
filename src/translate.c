@@ -3,12 +3,12 @@
 
 const int FRAME_SIZE = 4*1024;
 
-T_stm Tr_mergeExpList(Tr_expList list)
+T_stm Tr_mergeExpList(Tr_expList list, Temp_label main_fun)
 {
     Temp_label main = Temp_namedlabel("main");
     T_stm stm;
     if(!main) assert(0);
-    stm = T_Label(Temp_namedlabel("begin"));//T_Jump(T_Name(main), Temp_LabelList(main, NULL));
+    stm = T_Jump(T_Name(main_fun), Temp_LabelList(main, NULL));
     while(list!=NULL){
         stm = T_Seq(stm, Tr_unNx(list->head));
         list = list->tail;

@@ -37,7 +37,7 @@ struct Tr_expList_ { Tr_exp head; Tr_expList tail; };
 
 struct patchList_ { Temp_label *head; patchList tail; };
 
-T_stm Tr_mergeExpList(Tr_expList list);
+T_stm Tr_mergeExpList(Tr_expList list, Temp_label main_fun);
 
 Tr_exp Tr_Ex(T_exp exp);
 Tr_exp Tr_Nx(T_stm stm);
