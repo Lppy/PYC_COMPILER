@@ -31,7 +31,7 @@ F_access F_allocLocal(F_frame f, bool escape)
     if(escape == TRUE)
     {
         access = InFrame(f->framesize);
-        f->framesize -= offset;
+        f->framesize -= offset*alloc_bind;
     }
     else
     {
@@ -43,7 +43,7 @@ F_access F_allocLocal(F_frame f, bool escape)
 
 F_access InFrame(int offset)
 {
-    F_access tmp = (F_access) checked_malloc(alloc_bind*sizeof(*tmp));
+    F_access tmp = (F_access) checked_malloc(sizeof(*tmp));//alloc_bind*
     tmp->kind = inFrame;
     tmp->u.offset = offset;
     return tmp;
@@ -91,11 +91,11 @@ F_accesslist F_Accesslist(F_access head , F_accesslist tail)
     return tmp;
 }
 
-T_exp F_AddressExp(F_access acc, T_exp framePtr)
+T_exp F_AddressExp(T_exp m)
 {
-    if(acc->kind == inFrame)
+    if(m->kind == T_MEM)
     {
-        return T_Binop(T_plus, framePtr, T_Const(acc->u.offset));
+        return m->u.MEM;
     }
     return NULL;
 }
