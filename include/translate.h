@@ -61,7 +61,7 @@ Tr_exp Tr_stringExp(string str);
 Tr_exp Tr_simpleVar(Tr_access acc, Tr_frame frame);
 Tr_exp Tr_subscriptVar(Tr_exp base, Tr_exp index);
 Tr_exp Tr_fieldVar(Tr_exp base, int offset);
-Tr_exp Tr_addressVar(Tr_access acc, Tr_frame frame);
+Tr_exp Tr_addressVar(Tr_exp mem);
 
 Tr_exp Tr_binopExp(Tr_exp left, Tr_exp right, A_oper oper); //mod
 Tr_exp Tr_relopExp(Tr_exp left, Tr_exp right, A_oper oper);

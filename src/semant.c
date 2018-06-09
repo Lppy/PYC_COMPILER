@@ -361,11 +361,13 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                 type_error(var->pos, "not a pointer type");
             if(tmpexp.ty->kind != Ty_int && tmpexp.ty->kind != Ty_char)
                 type_error(var->pos, "the index is not integer");
-            return expTy(Tr_subscriptVar(tmpvar.exp ,tmpexp.exp), tmpvar.ty->u.array.ty);
+            return expTy(Tr_subscriptVar(tmpvar.exp, tmpexp.exp), tmpvar.ty->u.array.ty);
         }
     case A_addressVar:
         {
-            A_var thevar=var->u.address;
+            struct expty tmp = transVar(venv, tenv, var->u.address, frame);
+            return expTy(Tr_addressVar(tmp.exp), Ty_Int());
+            /*
             E_enventry env = NULL;
             Ty_ty ret_ty = NULL;
             Tr_exp exp = NULL;
@@ -405,6 +407,11 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                     }
                     break;
                 case A_subscriptVar:{
+                    struct expty t = transVar(venv, tenv, thevar, frame);
+                    Tr_addressVar()
+                    
+                    Ty_ty tarty = transTy(tenv, thevar->u.subscript.var);
+                    env = (E_enventry)S_look(venv, S_Symbol(thevar->u.subscript.var));
                     type_error(var->pos, "not supported");
                     env = (E_enventry)S_look(venv, S_Symbol(thevar->u.subscript.var->u.simple->name));
                     if(!env) break;
@@ -433,6 +440,7 @@ struct expty transVar(S_table venv, S_table tenv, A_var var, Tr_frame frame) {
                 type_error(var->pos, "cannot get the address of a function");
             else
                 return expTy(exp, ret_ty);
+            */
         }
     default: 
         assert(0);

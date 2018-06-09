@@ -231,11 +231,13 @@ Tr_exp Tr_stringExp(string s)
 Tr_exp Tr_simpleVar(Tr_access acc, Tr_frame frame)
 {
     T_exp tmp = T_Temp(F_FP());
+    /*
     while(frame && frame!=acc->frame->parent)
     {
         tmp = T_Mem(T_Binop(T_plus, T_Const(frame->frame->formals->head->u.offset), tmp));
         frame = frame->parent;
     }
+    */
     return Tr_Ex(F_Exp(acc->access, tmp));
 }
 
@@ -249,15 +251,9 @@ Tr_exp Tr_fieldVar(Tr_exp base, int offset)
     return Tr_Ex(T_Mem(T_Binop(T_plus, Tr_unEx(base), T_Const(offset*F_wordSize))));
 }
 
-Tr_exp Tr_addressVar(Tr_access acc, Tr_frame frame)
+Tr_exp Tr_addressVar(Tr_exp mem)
 {
-    T_exp tmp = T_Temp(F_FP());
-    while(frame && frame!=acc->frame->parent)
-    {
-        tmp = T_Mem(T_Binop(T_plus, T_Const(frame->frame->formals->head->u.offset), tmp));
-        frame = frame->parent;
-    }
-    return Tr_Ex(F_AddressExp(acc->access, tmp));
+    return Tr_Ex(F_AddressExp(Tr_unEx(mem)));
 }
 
 Tr_exp Tr_binopExp(Tr_exp left, Tr_exp right, A_oper oper)

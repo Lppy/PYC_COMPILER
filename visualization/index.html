@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="jslib/echarts.min.js"></script>
+    <script src="jslib/jquery.min.js"></script>
+</head>
+<body>
+    <p>PS:实心节点可以展开</p>
+    <div id="main" style="width: 1600px; height:600px;"></div>
+    <script>
+        var myChart = echarts.init(document.getElementById('main'));
+
+        myChart.showLoading();
+        $.getJSON('data.json', data => {
+            myChart.hideLoading();
+
+            myChart.setOption(option = {
+                tooltip: {
+                    trigger: 'item',
+                    triggerOn: 'mousemove'
+                },
+                series: [
+                    {
+                        name:'IR树',
+                        type:'tree',
+                        orient: 'horizontal',
+                        rootLocation: {x: 50, y: 'center'},
+
+                        data: [data],
+
+                        top: '1%',
+                        left: '7%',
+                        bottom: '1%',
+                        right: '20%',
+
+                        symbolSize: 10,
+
+                        label: {
+                            normal: {
+                                position: 'left',
+                                verticalAlign: 'middle',
+                                align: 'right',
+                                fontSize: 11
+                            }
+                        },
+
+                        leaves: {
+                            label: {
+                                normal: {
+                                    position: 'right',
+                                    verticalAlign: 'middle',
+                                    align: 'left'
+                                }
+                            }
+                        },
+
+                        initialTreeDepth: 10,
+                        expandAndCollapse: true,
+                        animationDuration: 550,
+                        animationDurationUpdate: 750
+                    }
+                ]
+            });
+        });
+    </script>
+</body>
+</html>

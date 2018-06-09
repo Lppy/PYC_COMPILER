@@ -56,7 +56,7 @@ static F_access InFrame(int offset);
 static F_access InReg(Temp_temp reg);
 
 T_exp F_Exp(F_access acc, T_exp framePtr);
-T_exp F_AddressExp(F_access acc, T_exp framePtr);
+T_exp F_AddressExp(T_exp m);
 T_exp F_externalCall(string s, T_expList explist);
 
 T_stm F_procEntryExit1(F_frame frame, T_stm stm);
