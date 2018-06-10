@@ -121,20 +121,14 @@ A_exp A_CaseExp(A_pos pos, A_exp constant, A_exp body);
 A_exp A_SwitchExp(A_pos pos, A_exp test, A_expList body);//
 A_exp A_ReturnExp(A_pos pos, A_exp res);
 
-//function declaration 第一个参数在链表尾部
-//A_dec A_FunctionDec(A_pos pos, A_fundecList function);
-//A_fundecList A_FundecList(A_fundec head, A_fundecList tail);
-//A_fundec A_Fundec(A_pos pos, S_symbol name, A_fieldList params, S_symbol result, A_exp body);
 A_dec A_FunctionDec(A_pos pos, S_symbol name, A_fieldList params, A_ty result, A_exp body);
 
 //variable declaration
-//---A_dec A_VarDec(A_pos pos, S_symbol var, S_symbol typ, A_exp init);
 A_dec A_VarDec(A_pos pos, A_efieldList varList, A_ty typ);
 A_efieldList A_EfieldList(A_efield head, A_efieldList tail);
 A_efield A_Efield(S_symbol name, A_exp init);
 
 //struct declaration
-//---A_field A_Field(A_pos pos, S_symbol name, S_symbol typ);
 A_dec A_StructDec(A_pos pos, A_ty typ, A_fieldList structure);
 A_fieldList A_FieldList(A_field head, A_fieldList tail);
 A_fieldList A_MergeFieldList(A_fieldList head, A_fieldList tail);
@@ -147,10 +141,5 @@ A_ty A_ArrayTy(A_ty tar, int length);//array type
 A_decList A_DecList(A_dec head, A_decList tail);
 
 A_expList A_ExpList(A_exp head, A_expList tail);
-
-
-//A_namety A_Namety(S_symbol name, A_ty ty);
-//A_nametyList A_NametyList(A_namety head, A_nametyList tail);
-
 
 #endif

@@ -74,16 +74,9 @@ void type_error(int pos, string message, ...){
 	assert(0);
 }
 
-// void error_reset(string fname){
 void error_reset(void){
 	anyErrors=FALSE; 
-	// fileName=fname; 
 	lineNum=1;
 	linePos=intList(0,NULL);
-	// yyin = fopen(fname,"r");
-	// if (!yyin){
-	// 	parse_error(0, "cannot open file"); 
-	// 	exit(1);
-	// }
 }
 

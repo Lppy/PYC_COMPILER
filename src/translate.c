@@ -60,22 +60,6 @@ Tr_accesslist Tr_formals(Tr_frame frame)
     return tmp;
 }
 
-/*
-Tr_frame Tr_outermorst()
-{
-    static Tr_frame tmp = NULL;
-    if (!tmp)
-    {
-        tmp = (Tr_frame)checked_malloc(sizeof(*tmp));
-        U_boolList b = U_BoolList(TRUE, NULL);
-        tmp->frame = F_newframe(Temp_newlabel(), b);
-        tmp->parent = NULL;
-    }
-    return tmp;
-}
-*/
-
-//------------------------
 
 void Tr_ClearAcces(Tr_accesslist list)
 {
@@ -576,15 +560,6 @@ Tr_exp Tr_structDec(Tr_access acc, Tr_exp init)
 
 Tr_exp Tr_funDec(Temp_label label, Tr_exp body)
 {
-    /*
-    T_stm stm;
-    stm = T_Move(T_Temp(F_RV()) , Tr_unEx(body));
-    bodylist = bodylist->tail;
-    while (bodylist)
-    {
-      stm = T_Seq(T_Move(T_Temp(F_RV()) , Tr_unEx(bodylist->head)) , stm);
-    }
-    */
     return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE))), Tr_unNx(body))));
 }
 
@@ -596,66 +571,7 @@ Tr_exp Tr_callExp(Temp_label label, Tr_expList explist)
         tmplist = T_ExpList(Tr_unEx(explist->head), tmplist);
         explist = explist->tail;
     }
-    tmplist = T_ExpList(T_Temp(F_FP()), tmplist); //静态链为frame的FP
+    tmplist = T_ExpList(T_Temp(F_FP()), tmplist); 
     T_exp callfun = T_Call(T_Name(label), tmplist); //call修改FP
     return Tr_Ex(callfun);
 }
-
-/*
- Tr_exp Tr_StaticLink(Tr_frame now, Tr_frame def)
- {
-    T_exp addr = T_Temp(F_FP());
-    while(now && (now != def->parent)) 
-    { 
-        F_access sl = F_formals(now->frame)->head;
-        addr = F_Exp(sl, addr); //当前栈帧的静态链，即当前栈帧的FP
-        now = now->parent;
-    }
-    return Tr_Ex(addr); //从now往前得到def的FP
-}
-*/
-
-
-/*
-Tr_exp Tr_callExp(E_enventry entry , Tr_frame frame , Tr_expList explist  ) 
-{
-    
-     T_expList tmplist = NULL;
-     while(explist)
-     {
-         tmplist = T_ExpList( Tr_unEx(explist->head) , tmplist);
-         explist = explist->tail;
-     }
-     tmplist = T_ExpList(Tr_unEx(Tr_StaticLink(entry->u.fun.frame , frame)) , tmplist);
-    T_exp callfun = T_Call(T_Name(entry->u.fun.label) ,tmplist);
-    return Tr_Ex(callfun);
-}
-*/
-/*
-Tr_exp Tr_recordExp( Tr_expList explist , int num)  //’‚¿Ô¥´Ω¯¿¥µƒexplist ∫Õ’Ê «µƒexplist «œ‡∑¥µƒ
-{
-   T_stm stm;
-   Temp_temp t = Temp_newtemp();
-   T_exp callfun = T_Call(T_Name(Temp_namedlabel("initRecord")) ,T_ExpList(T_Const(num*F_wordSize) , NULL));
-
-   stm = T_Move(T_Mem(T_Binop(T_plus , T_Temp(t) , T_Const((num - 1)*F_wordSize))), Tr_unEx(explist->head));
-   num--;
-   explist = explist->tail;
-   while(explist)
-   {
-     stm = T_Seq(T_Move(T_Mem(T_Binop(T_plus, T_Temp(t) , T_Const((num -1 ) * F_wordSize))), Tr_unEx(explist->head)),stm);
-     explist = explist->tail;
-     num--;
-   }
-   stm = T_Seq(T_Move(T_Temp(t) , callfun) , stm);
-   return Tr_Ex( T_Eseq( stm , T_Temp(t)));
-}
-
-
-Tr_exp Tr_arryExp(Tr_exp index , Tr_exp init)
-{
-    Temp_temp t = Temp_newtemp();
-    T_exp callfun = T_Call(T_Name(Temp_namedlabel("initArray")) ,T_ExpList( Tr_unEx(index),T_ExpList(Tr_unEx(init) ,NULL)));
-    return  Tr_Nx( T_Move( T_Temp(t) , callfun) );
-}
-*/

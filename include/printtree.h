@@ -6,6 +6,7 @@
 #include "temp.h"
 #include "tree.h"
 
+//输出JSON文件
 void printProg(FILE *out, T_stm stm);
 
 #endif

@@ -88,24 +88,14 @@ Tr_exp Tr_structDec();
 Tr_exp Tr_funDec(Temp_label label, Tr_exp body);
 
 
-//Tr_exp Tr_StaticLink(Tr_frame now, Tr_frame def);
-
 Tr_expList Tr_ExpList(Tr_exp head, Tr_expList tail);
 
-//void Tr_procEntryExit(Tr_frame frame, Tr_exp body, Tr_accesslist formals);
-
-//F_fragList Tr_getResult() ;
 
 Tr_accesslist Tr_Accesslist(Tr_access head, Tr_accesslist tial);
 Tr_access Tr_Access(Tr_frame frame, F_access access);
-//Tr_frame Tr_outermorst();
 Tr_frame Tr_newFrame(Tr_frame parent, Temp_label name, U_boolList formals);
 Tr_accesslist Tr_formals(Tr_frame frame);
 Tr_access Tr_allocLocal(Tr_frame frame, bool escape);
 void Tr_ClearAcces(Tr_accesslist list);
-
-//Tr_exp Tr_recordExp(Tr_expList explist , int num);
-//Tr_exp Tr_recordExp( Tr_expList explist , int num);
-//Tr_exp Tr_arryExp(Tr_exp index , Tr_exp init) ;
 
 #endif
