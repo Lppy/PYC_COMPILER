@@ -44,6 +44,7 @@ Tr_frame Tr_newFrame(Tr_frame parent, Temp_label name, U_boolList formals)
     Tr_frame frame = (Tr_frame)checked_malloc(sizeof(*frame));
     frame->parent = parent;
     frame->frame = F_newframe(name, U_BoolList(TRUE, formals));
+    //frame->frame = F_newframe(name, formals);
     return frame;
 }
 

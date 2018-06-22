@@ -64,17 +64,18 @@ F_frame F_newframe(Temp_label name , U_boolList formals)
     frame->formals = NULL ;
     U_boolList par = formals ;
     F_access acc ;
-    frame->framesize = 0 ;
+    //frame->framesize = 0 ;
+    frame->framesize = 4 ;
     while(par != NULL)
     {
         if (par->head)
         {
-          acc = InFrame(frame->framesize) ;   
-          frame->framesize -= offset ;
+            acc = InFrame(frame->framesize) ;   
+            frame->framesize -= offset ;
         }
         else
         {
-         acc = InReg(Temp_newtemp()) ;
+            acc = InReg(Temp_newtemp()) ;
         }
         frame->formals = F_Accesslist(acc , frame->formals);
         par = par->tail ;
