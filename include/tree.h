@@ -16,17 +16,6 @@ typedef enum {T_plus, T_minus, T_mul, T_div, T_mod,
 typedef enum  {T_eq, T_ne, T_lt, T_gt, T_le, T_ge,
     T_ult, T_ule, T_ugt, T_uge} T_relOp;
 
-/*
-struct T_const_{
-	enum {T_INT, T_FLOAT, T_CHAR} kind;
-	union {
-		double FLOAT;
-		int INT;
-		char CHAR;
-	} u;
-};
-*/
-
 struct T_stm_ {
 	enum {T_SEQ, T_LABEL, T_JUMP, T_CJUMP, T_MOVE, T_EXP, T_RET} kind;
 	union {
