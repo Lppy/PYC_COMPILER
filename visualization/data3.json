@@ -22,10 +22,13 @@
  "name":"MOVE","children":[{  "name":"MEM","children":[{   "name":"BINOP PLUS","children":[{    "name":"TEMP t100"},{    "name":"CONST 8"}]}]},{  "name":"CONST 2"}]
 },
 {
- "name":"EXP","children":[{  "name":"CALL","children":[{   "name":"NAME f"},{    "name":"MEM","children":[{     "name":"BINOP PLUS","children":[{      "name":"TEMP t100"},{      "name":"CONST 4"}]}]},{    "name":"MEM","children":[{     "name":"BINOP PLUS","children":[{      "name":"TEMP t100"},{      "name":"CONST 8"}]}]}]}]
+ "name":"MOVE","children":[{  "name":"TEMP t103"},{  "name":"BINOP PLUS","children":[{   "name":"TEMP t100"},{   "name":"CONST 4"}]}]
 },
 {
- "name":"MOVE","children":[{  "name":"MEM","children":[{   "name":"BINOP PLUS","children":[{    "name":"TEMP t100"},{    "name":"CONST 4"}]}]},{  "name":"TEMP t101"}]
+ "name":"MOVE","children":[{  "name":"TEMP t102"},{  "name":"CALL","children":[{   "name":"NAME f"},{    "name":"MEM","children":[{     "name":"BINOP PLUS","children":[{      "name":"TEMP t100"},{      "name":"CONST 4"}]}]},{    "name":"MEM","children":[{     "name":"BINOP PLUS","children":[{      "name":"TEMP t100"},{      "name":"CONST 8"}]}]}]}]
+},
+{
+ "name":"MOVE","children":[{  "name":"MEM","children":[{   "name":"TEMP t103"}]},{  "name":"TEMP t102"}]
 },
 {
  "name":"MOVE","children":[{  "name":"TEMP t101"},{  "name":"MEM","children":[{   "name":"BINOP PLUS","children":[{    "name":"TEMP t100"},{    "name":"CONST 4"}]}]}]

@@ -8,6 +8,7 @@
 #include "semant.h"
 #include "tree.h"
 #include "printtree.h"
+#include "linearize.h"
 
 #ifndef YYSTYPE
 union YACC_TYPE {
@@ -352,9 +353,9 @@ expression_statement
 
 //---A_exp
 selection_statement
-        : IF '(' expression ')' statement {$$=A_IfExp(pos,A_SeqExp(pos,$3),$5,null);}
-        | IF '(' expression ')' statement ELSE statement {$$=A_IfExp(pos,A_SeqExp(pos,$3),$5,$7);}
-        | SWITCH '(' expression ')' '{' labeled_statement_list '}' {$$=A_SwitchExp(pos,A_SeqExp(pos,$3),$6);} //
+        : IF '(' logical_or_expression ')' statement {$$=A_IfExp(pos,$3,$5,null);}
+        | IF '(' logical_or_expression ')' statement ELSE statement {$$=A_IfExp(pos,$3,$5,$7);}
+        | SWITCH '(' logical_or_expression ')' '{' labeled_statement_list '}' {$$=A_SwitchExp(pos,$3,$6);} //
         ;
 
 //---A_expList//
@@ -366,10 +367,10 @@ labeled_statement_list
 
 //---A_exp
 iteration_statement
-        : WHILE '(' expression ')' statement {$$=A_WhileExp(pos,A_SeqExp(pos,$3),$5);}
-        | DO statement WHILE '(' expression ')' ';' {$$=A_SeqExp(pos,A_ExpList($2,A_ExpList(A_WhileExp(pos,A_SeqExp(pos,$5),$2),null)));}
-        | FOR '(' expression_statement expression_statement ')' statement {$$=A_ForExp(pos,$3,$4,A_NilExp(pos),$6);}
-        | FOR '(' expression_statement expression_statement expression ')' statement {$$=A_ForExp(pos,$3,$4,A_SeqExp(pos,$5),$7);}
+        : WHILE '(' logical_or_expression ')' statement {$$=A_WhileExp(pos,$3,$5);}
+        | DO statement WHILE '(' logical_or_expression ')' ';' {$$=A_SeqExp(pos,A_ExpList($2,A_ExpList(A_WhileExp(pos,$5,$2),null)));}
+        | FOR '(' expression_statement logical_or_expression ';' ')' statement {$$=A_ForExp(pos,$3,$4,A_NilExp(pos),$7);}
+        | FOR '(' expression_statement logical_or_expression ';' expression ')' statement {$$=A_ForExp(pos,$3,$4,A_SeqExp(pos,$6),$8);}
         ;
 
 //---A_exp
@@ -403,9 +404,14 @@ int main(){
     int res = yyparse();
     //pr_decList(stdout, PARSE_RES, 0);
     T_stm resTree = transDecList(PARSE_RES);
-    FILE *fp = fopen("visualization/data.json", "w");
-    printProg(fp, resTree);
-    fclose(fp);
+    //FILE *fp = fopen("visualization/data2.json", "w");
+    //printProg(fp, resTree);
+    T_stmList r = linearize(resTree);
+    FILE *fp2 = fopen("visualization/data.json", "w");
+    printList(fp2, r);
+
+    //fclose(fp);
+    fclose(fp2);
     return 0;
 }
 

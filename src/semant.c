@@ -63,9 +63,30 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
             E_enventry tmp =(E_enventry)S_look(venv, exp->u.call.func);
             if(tmp == NULL)
                 type_error(exp->pos, "function %s undeclared", S_name(exp->u.call.func));
+            {
+                Ty_fieldList tnew = tmp->u.fun.formals, told = NULL, t;
+                while(tnew){
+                    t = tnew->tail;
+                    tnew->tail = told;
+                    told = tnew;
+                    tnew = t;
+                }
+                tmp->u.fun.formals = told;
+            }
+            {
+                A_expList tnew = exp->u.call.args, told = NULL, t;
+                while(tnew){
+                    t = tnew->tail;
+                    tnew->tail = told;
+                    told = tnew;
+                    tnew = t;
+                }
+                exp->u.call.args = told;
+            } 
             Ty_fieldList tylist  = tmp->u.fun.formals;
             A_expList explist = exp->u.call.args;
             Tr_expList trexplist = NULL;
+
             while(tylist != NULL && explist != NULL){
                 struct expty exptyp = transExp(venv, tenv, explist->head, frame);
                 if(exptyp.ty->kind == Ty_nil){
@@ -184,17 +205,24 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
         }
     case A_seqExp:
         {
+            {
+                A_expList tnew = exp->u.seq, told = NULL, t;
+                while(tnew){
+                    t = tnew->tail;
+                    tnew->tail = told;
+                    told = tnew;
+                    tnew = t;
+                }
+                exp->u.seq = told;
+            }
             A_expList explist = exp->u.seq;
             Tr_expList trexplist = NULL;
-            Ty_ty tmp = NULL; int flag = 0;
+            Ty_ty tmp = NULL;
             if(explist){
                 while(explist){
                     struct expty t = transExp(venv, tenv, explist->head, frame);
                     trexplist = Tr_ExpList(t.exp, trexplist);
-                    if(!flag){
-                        tmp = t.ty;
-                        flag = 1;
-                    }
+                    tmp = t.ty;
                     explist = explist->tail;
                 } 
             } else{
@@ -280,6 +308,16 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
         return expTy(Tr_continueExp(), Ty_Void());
     case A_letExp:
         {
+            {
+                A_decList tnew = exp->u.let.decs, told = NULL, t;
+                while(tnew){
+                    t = tnew->tail;
+                    tnew->tail = told;
+                    told = tnew;
+                    tnew = t;
+                }
+                exp->u.let.decs = told;
+            }
             struct expty tmp;
             S_beginScope(venv);
             A_decList declist = exp->u.let.decs;
@@ -303,7 +341,7 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
             struct expty tmptest = transExp(venv, tenv, exp->u.switchh.test, frame);
             A_expList body = exp->u.switchh.bodyList;
             Tr_expList bodylist = NULL;
-            if(tmptest.ty->kind != Ty_int || tmptest.ty->kind != Ty_char)
+            if(tmptest.ty->kind != Ty_int && tmptest.ty->kind != Ty_char)
                 type_error(exp->pos, "only char or int are allowed to be switched");
             while(body){
                 struct expty tmpcon = transExp(venv, tenv, body->head->u.casee.constant, frame);
@@ -317,7 +355,13 @@ struct expty transExp(S_table venv, S_table tenv, A_exp exp, Tr_frame frame){
         }
     case A_returnExp:
         {
-            struct expty tmp = transExp(venv, tenv, exp->u.returnn.res, frame);
+            struct expty tmp;
+            if(exp->u.returnn.res)
+                tmp = transExp(venv, tenv, exp->u.returnn.res, frame);
+            else{
+                tmp.ty = Ty_Void();
+                tmp.exp = NULL;
+            }
             tmp = expTy(Tr_returnExp(tmp.exp), tmp.ty);
             return tmp;
         }
@@ -377,6 +421,17 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
     switch(dec->kind){
     case A_functionDec:
         {
+            {
+                A_fieldList tnew = dec->u.function.params, told = NULL, t;
+                while(tnew){
+                    t = tnew->tail;
+                    tnew->tail = told;
+                    told = tnew;
+                    tnew = t;
+                }
+                dec->u.function.params = told;
+            }
+
             S_symbol name = dec->u.function.name;
             A_fieldList para = dec->u.function.params;
             A_ty result = dec->u.function.result;
@@ -439,6 +494,16 @@ Tr_exp transDec(S_table venv, S_table tenv, A_dec dec, Tr_frame frame){
         }
     case A_varDec:
         {
+            {
+                A_efieldList tnew = dec->u.var.varList, told = NULL, t;
+                while(tnew){
+                    t = tnew->tail;
+                    tnew->tail = told;
+                    told = tnew;
+                    tnew = t;
+                }
+                dec->u.var.varList = told;
+            }
             A_efieldList vars = dec->u.var.varList;
             Tr_expList initList = NULL;
             Tr_accesslist accList = NULL;

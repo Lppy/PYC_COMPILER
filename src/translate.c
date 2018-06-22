@@ -421,8 +421,12 @@ Tr_exp Tr_seqExp(Tr_expList explist)
 }
 
 Tr_exp Tr_assignExp(Tr_exp dst, Tr_exp src)
-{
-    return Tr_Nx(T_Move(T_Mem(Tr_unEx(dst)), T_Mem(Tr_unEx(src))));
+{   
+    if(Tr_unEx(src)->kind == T_CALL){
+        T_exp tmp = T_Temp(F_RV());
+        return Tr_Nx(T_Seq(T_Exp(Tr_unEx(src)), T_Move(Tr_unEx(dst), tmp)));
+    }
+    return Tr_Nx(T_Move(Tr_unEx(dst), Tr_unEx(src)));
 }
 
 Tr_exp Tr_letExp(Tr_expList declist, Tr_exp exp)
@@ -488,7 +492,7 @@ Tr_exp Tr_forExp(Tr_exp e1, Tr_exp e2, Tr_exp e3, Tr_exp body)
 Tr_exp Tr_caseExp(Tr_exp test, Tr_exp constant, Tr_exp body)
 {
     if(constant){
-        Temp_label done = Temp_namedlabel("done");
+        Temp_label done = Temp_namedlabel("switchdone");
         Temp_label t = Temp_newlabel();
         Temp_label f = Temp_newlabel();
         T_stm stm = T_Cjump(T_eq, Tr_unEx(test), Tr_unEx(constant), NULL, NULL);
@@ -509,7 +513,7 @@ Tr_exp Tr_caseExp(Tr_exp test, Tr_exp constant, Tr_exp body)
 
 Tr_exp Tr_switchExp(Tr_expList bodyList)
 {
-    Temp_label done = Temp_namedlabel("done");
+    Temp_label done = Temp_namedlabel("switchdone");
     T_stm stm = T_Label(done);
     while(bodyList != NULL){
         stm = T_Seq(Tr_unNx(bodyList->head), stm);
@@ -521,7 +525,7 @@ Tr_exp Tr_switchExp(Tr_expList bodyList)
 Tr_exp Tr_returnExp(Tr_exp res)
 {
     T_exp tmp = T_Temp(F_RV());
-    T_stm stm = T_Move(T_Temp(F_FP()), T_Mem(T_Binop(T_plus, T_Temp(F_FP()), T_Const(0))));
+    T_stm stm = T_Move(T_Temp(F_FP()), T_Mem(T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE))));
     if(res)
         return Tr_Nx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Seq(stm, T_Ret())));
     else
@@ -560,7 +564,7 @@ Tr_exp Tr_structDec(Tr_access acc, Tr_exp init)
 
 Tr_exp Tr_funDec(Temp_label label, Tr_exp body)
 {
-    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE))), Tr_unNx(body))));
+    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(-FRAME_SIZE))), Tr_unNx(body))));
 }
 
 Tr_exp Tr_callExp(Temp_label label, Tr_expList explist)
@@ -571,7 +575,7 @@ Tr_exp Tr_callExp(Temp_label label, Tr_expList explist)
         tmplist = T_ExpList(Tr_unEx(explist->head), tmplist);
         explist = explist->tail;
     }
-    tmplist = T_ExpList(T_Temp(F_FP()), tmplist); 
+    //tmplist = T_ExpList(T_Temp(F_FP()), tmplist); 
     T_exp callfun = T_Call(T_Name(label), tmplist); //call修改FP
     return Tr_Ex(callfun);
 }

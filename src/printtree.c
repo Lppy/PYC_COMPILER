@@ -104,3 +104,18 @@ void printProg(FILE *out, T_stm stm)
 		fprintf(out, "\n}");
 	}
 }
+
+void printList(FILE *out, T_stmList stm)
+{
+	if(stm == NULL)
+		return;
+	fprintf(out, "{\"name\":\"root\",\n\"children\":[\n");
+	while(stm->tail != NULL){
+		printProg(out, stm->head);
+		fprintf(out, ",\n");
+		stm = stm->tail;
+	}
+	printProg(out, stm->head);
+	fprintf(out, "\n]}");
+
+}

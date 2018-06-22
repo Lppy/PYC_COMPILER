@@ -9,4 +9,6 @@
 //输出JSON文件
 void printProg(FILE *out, T_stm stm);
 
+void printList(FILE *out, T_stmList stm);
+
 #endif
