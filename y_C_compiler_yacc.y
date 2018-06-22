@@ -10,6 +10,7 @@
 #include "printtree.h"
 #include "linearize.h"
 #include "frame.h"
+#include "assem.h"
 
 #ifndef YYSTYPE
 union YACC_TYPE {
@@ -412,6 +413,7 @@ int main(){
     T_stmList r = linearize(resTree);
     FILE *fp2 = fopen("visualization/data.json", "w");
     printList(fp2, r);
+    assem(r);
 
     //fclose(fp);
     fclose(fp2);
