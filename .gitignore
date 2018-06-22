@@ -3,5 +3,4 @@ parser
 build/
 .DS_Store
 .vscode/
-visualization/
 *.asm
