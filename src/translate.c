@@ -525,11 +525,13 @@ Tr_exp Tr_switchExp(Tr_expList bodyList)
 Tr_exp Tr_returnExp(Tr_exp res)
 {
     T_exp tmp = T_Temp(F_RV());
-    T_stm stm = T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE)));
+    //T_stm stm = T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE)));
     if(res)
-        return Tr_Nx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Seq(stm, T_Ret())));
+        //return Tr_Nx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Seq(stm, T_Ret())));
+        return Tr_Nx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Ret()));
     else
-        return Tr_Nx(T_Seq(stm, T_Ret()));
+        //return Tr_Nx(T_Seq(stm, T_Ret()));
+        return Tr_Nx(T_Ret());
 }
 
 Tr_exp Tr_varDec(Tr_accesslist accList, Tr_expList initList)
@@ -564,7 +566,8 @@ Tr_exp Tr_structDec(Tr_access acc, Tr_exp init)
 
 Tr_exp Tr_funDec(Temp_label label, Tr_exp body)
 {
-    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(-FRAME_SIZE))), Tr_unNx(body))));
+    //return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(-FRAME_SIZE))), Tr_unNx(body))));
+    return Tr_Nx(T_Seq(T_Label(label), T_Seq(T_Label(Temp_namedlabel("func")), Tr_unNx(body))));
 }
 
 Tr_exp Tr_callExp(Temp_label label, Tr_expList explist)
