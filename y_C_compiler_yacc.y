@@ -9,6 +9,7 @@
 #include "tree.h"
 #include "printtree.h"
 #include "linearize.h"
+#include "frame.h"
 
 #ifndef YYSTYPE
 union YACC_TYPE {
@@ -401,6 +402,8 @@ parameter_declaration
 
 int main(){
     error_reset();
+    F_FP();
+    F_RV();
     int res = yyparse();
     //pr_decList(stdout, PARSE_RES, 0);
     T_stm resTree = transDecList(PARSE_RES);
