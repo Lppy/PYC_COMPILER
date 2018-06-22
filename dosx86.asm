@@ -98,8 +98,6 @@ begin proc near
 	mov ax, sp
 	pop bx
 	add ax, bx
-	mov bx, ax
-	mov ax, [bx]
 	mov sp, ax
 	ret
 begin endp
