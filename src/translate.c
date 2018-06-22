@@ -525,7 +525,7 @@ Tr_exp Tr_switchExp(Tr_expList bodyList)
 Tr_exp Tr_returnExp(Tr_exp res)
 {
     T_exp tmp = T_Temp(F_RV());
-    T_stm stm = T_Move(T_Temp(F_FP()), T_Mem(T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE))));
+    T_stm stm = T_Move(T_Temp(F_FP()), T_Binop(T_plus, T_Temp(F_FP()), T_Const(FRAME_SIZE)));
     if(res)
         return Tr_Nx(T_Seq(T_Move(tmp, Tr_unEx(res)), T_Seq(stm, T_Ret())));
     else
