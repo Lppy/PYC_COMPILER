@@ -5,12 +5,18 @@
 static FILE *fp;
 static int data_max = 0;
 static char now_func[20];
+static char prev_lbl[20];
+static bool is_prev_lbl = FALSE;
 
 static void cmd(string msg){
     fprintf(fp, "\t%s\n", msg);
 }
 
 static void exp2asm(T_exp exp){
+    if(is_prev_lbl){
+        fprintf(fp, "%s: \n", prev_lbl);
+        is_prev_lbl = FALSE;
+    }
     switch(exp->kind){
         case T_BINOP:
             exp2asm(exp->u.BINOP.right);
@@ -49,10 +55,10 @@ static void exp2asm(T_exp exp){
             }
             break;
         }
-        case T_NAME:
-            fprintf(fp, "%s proc near\n", exp->u.NAME->name);
-            strcpy(now_func, exp->u.NAME->name);
-            break;
+//        case T_NAME:
+//            fprintf(fp, "%s proc near\n", exp->u.NAME->name);
+//            strcpy(now_func, exp->u.NAME->name);
+//            break;
         case T_CONST:
             fprintf(fp, "\tmov ax, %d\n", exp->u.CONST);
             break;
@@ -80,9 +86,16 @@ static void exp2asm(T_exp exp){
 }
 
 static void stm2asm(T_stm stm){
+    if(is_prev_lbl && stm->kind != T_LABEL && stm->kind != T_MOVE){
+        fprintf(fp, "%s: \n", prev_lbl);
+        is_prev_lbl = FALSE;
+    }
     switch(stm->kind){//T_SEQ, T_LABEL, T_JUMP, T_CJUMP, T_MOVE, T_EXP, T_RET
         case T_LABEL:
-            fprintf(fp, "%s: \n", stm->u.LABEL->name);
+            sprintf(prev_lbl, "%s", stm->u.LABEL->name);
+            if(strcmp(prev_lbl, "main") == 0)
+                strcpy(prev_lbl, "begin");
+            is_prev_lbl = TRUE;
             break;
         case T_JUMP:
             fprintf(fp, "\tjmp %s\n", stm->u.JUMP.exp->u.NAME->name);
@@ -122,10 +135,33 @@ static void stm2asm(T_stm stm){
             fprintf(fp, "\tjmp %s\n", f);
             break;
         }
-        case T_MOVE:
+        case T_MOVE:{
+            int tmp = stm->u.MOVE.dst->u.TEMP->num;
+            if(stm->u.MOVE.dst->kind == T_TEMP && \
+               tmp == 100 &&\
+               is_prev_lbl && \
+               stm->u.MOVE.src->kind == T_BINOP && \
+               stm->u.MOVE.src->u.BINOP.right->kind == T_CONST && \
+               stm->u.MOVE.src->u.BINOP.right->u.CONST < 0){
+                fprintf(fp, "%s proc near\n", prev_lbl);
+                is_prev_lbl = FALSE;
+                strcpy(now_func, prev_lbl);
+            } else if(is_prev_lbl){
+                fprintf(fp, "%s: \n", prev_lbl);
+                is_prev_lbl = FALSE;
+            }
             exp2asm(stm->u.MOVE.src);
             if(stm->u.MOVE.dst->kind == T_TEMP){
-                fprintf(fp, "\tmov T%d, ax\n", stm->u.MOVE.dst->u.TEMP->num);
+                if(tmp >= 102){
+                    fprintf(fp, "\tmov T%d, ax\n", tmp);
+                    data_max = data_max > tmp ? data_max : tmp;
+                } else if(tmp == 101){
+                    cmd("mov RET_VAL, ax");
+                } else if(tmp == 100){
+                    cmd("mov sp, ax");
+                } else{
+                    assert(0);
+                }
             } else if(stm->u.MOVE.dst->kind == T_MEM){
                 cmd("push ax");
                 exp2asm(stm->u.MOVE.dst);
@@ -135,6 +171,7 @@ static void stm2asm(T_stm stm){
                 parse_error("not supported yet"); assert(0);
             }
             break;
+        }
         case T_EXP:
             exp2asm(stm->u.EXP);
             break;
@@ -149,7 +186,7 @@ static void stm2asm(T_stm stm){
 
 void assem(T_stmList list){
     fp = fopen("dosx86.asm", "w");
-    for(; list; list=list->tail){
+    for(list = list->tail; list; list = list->tail){
         stm2asm(list->head);
     }
 }
