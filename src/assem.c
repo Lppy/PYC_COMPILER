@@ -79,6 +79,7 @@ static void exp2asm(T_exp exp){
             fprintf(fp, "\tcall %s\n", exp->u.CALL.fun->u.NAME->name);
 //            fprintf(fp, "\tadd sp, %d\n", count);
             cmd("pop bp");
+            cmd("mov ax, RET_VAL");
             break;
         }
         default:assert(0);
@@ -93,8 +94,6 @@ static void stm2asm(T_stm stm){
     switch(stm->kind){//T_SEQ, T_LABEL, T_JUMP, T_CJUMP, T_MOVE, T_EXP, T_RET
         case T_LABEL:
             sprintf(prev_lbl, "%s", stm->u.LABEL->name);
-            if(strcmp(prev_lbl, "main") == 0)
-                strcpy(prev_lbl, "begin");
             is_prev_lbl = TRUE;
             break;
         case T_JUMP:
@@ -166,7 +165,8 @@ static void stm2asm(T_stm stm){
                 cmd("push ax");
                 exp2asm(stm->u.MOVE.dst);
                 cmd("pop bx");
-                cmd("mov [ax], bx");
+                cmd("mov bp, ax");
+                cmd("mov [bp], bx");
             } else{
                 parse_error("not supported yet"); assert(0);
             }
@@ -177,7 +177,7 @@ static void stm2asm(T_stm stm){
             break;
         case T_RET:
             cmd("ret");
-            fprintf(fp, "%s endp\n", now_func);
+            fprintf(fp, "%s endp\n\n", now_func);
             break;
         default:
             assert(0);
@@ -185,10 +185,56 @@ static void stm2asm(T_stm stm){
 }
 
 void assem(T_stmList list){
-    fp = fopen("dosx86.asm", "w");
+    FILE *target = fopen("dosx86.asm", "w");
+    char buf[100];
+    
+    fp = fopen("mid", "w");
+    fprintf(fp,
+            ".code\n"
+            "begin proc near\n\t"
+            "mov ax, @data\n\t"
+            "mov ds, ax\n\t"
+            "call main\n\n\t"
+            "mov ax, RET_VAL\n\t"
+            "mov bl, 10\n\t"
+            "mov cx, 10\n\t"
+            "mov bh, 0\n"
+            "lo1:\n\t"
+            "div bl\n\t"
+            "mov dl, ah\n\t"
+            "add dl, 30h\n\t"
+            "push dx\n\t"
+            "inc bh\n\t"
+            "and ax, 00ffh\n\t"
+            "loopnz lo1\n\t"
+            "mov cl, bh\n\t"
+            "mov ah, 02h\n"
+            "lo2:\n\t"
+            "pop dx\n\t"
+            "int 21h\n\t"
+            "loop lo2\n"
+            "mov ah, 4ch\n\t"
+            "int 21h\n"
+            "begin endp\n\n");
+    
     for(list = list->tail; list; list = list->tail){
         stm2asm(list->head);
     }
+    fprintf(fp, "end begin\n\n");
+    fclose(fp);
+    
+    fprintf(target, ".model small\n\n.data\n");
+    fprintf(target, "RET_VAL dw 0\n");
+    while(data_max >= 102){
+        fprintf(target, "T%d dw 0\n", data_max--);
+    }
+    fprintf(target, "\n.stack %d\n\n", FRAME_SIZE*8);
+    fp = fopen("mid", "r");
+    while(fgets(buf, 100, fp)){
+        fputs(buf, target);
+    }
 }
-
+//if(strcmp(prev_lbl, "begin") == 0){
+//    fprintf(fp, "\tmov ax, @data\n\tmov ds, ax\n");
+//}
 
