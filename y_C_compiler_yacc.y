@@ -408,15 +408,13 @@ int main(){
     int res = yyparse();
     //pr_decList(stdout, PARSE_RES, 0);
     T_stm resTree = transDecList(PARSE_RES);
-    //FILE *fp = fopen("visualization/data2.json", "w");
-    //printProg(fp, resTree);
+    FILE *fp = fopen("visualization/data.json", "w");
+    printProg(fp, resTree);
     T_stmList r = linearize(resTree);
-    FILE *fp2 = fopen("visualization/data.json", "w");
-    printList(fp2, r);
+    //printList(fp, r);
     assem(r);
 
-    //fclose(fp);
-    fclose(fp2);
+    fclose(fp);
     return 0;
 }
 
