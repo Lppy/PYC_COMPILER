@@ -1,19 +1,12 @@
 #include "linearize.h"
 
-/*typedef struct C_stmListList_ *C_stmListList;
-struct C_block { C_stmListList stmLists; Temp_label label;};
-struct C_stmListList_ { T_stmList head; C_stmListList tail;};*/
-
 struct stmExp {T_stm s; T_exp e;};
 
 typedef struct expRefList_ *expRefList;
 struct expRefList_ {T_exp *head; expRefList tail;};
 
-/* local function prototypes */
 static T_stm do_stm(T_stm stm);
 static struct stmExp do_exp(T_exp exp);
-//static C_stmListList mkBlocks(T_stmList stms, Temp_label done);
-//static T_stmList getNext(void);
 
 static expRefList ExpRefList(T_exp *head, expRefList tail)
 {
