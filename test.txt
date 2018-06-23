@@ -1,3 +1,9 @@
+int main(){
+	return 1;
+}#
+
+///
+
 int f(int b){
     return b-1;
 }
@@ -85,4 +91,34 @@ int main(){
 	sb.b = &sb.a;
 	sb.c = &(sb.c[0][sb.a*2]);
 	return 0;
+}#
+
+///
+
+int fact(int a){
+	int b;
+	if(a <= 1)
+		b=1;
+	else
+		b=fact(a-1)*a;
+	return b;
+}
+
+int main(){
+	return fact(5);
+}#
+
+///
+
+int fact(int a){
+	int ret = 1;
+	while(a){
+		ret = ret * a;
+		a = a - 1;
+	}
+	return ret;
+}
+
+int main(){
+	return fact(5);
 }#
