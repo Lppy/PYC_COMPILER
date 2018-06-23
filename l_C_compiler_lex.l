@@ -82,6 +82,7 @@ E			[Ee][+-]?{D}+
 "^"				{ count(); return '^'; }
 "|"				{ count(); return '|'; }
 "?"				{ count(); return '?'; }
+"\r\n"			{ count(); linebuffer_pos=0; error_newline();}
 "\n"			{ count(); linebuffer_pos=0; error_newline();}
 [ \t\v\f]		{ count(); /* skip blank character */ }
 "#"				{ return 0; }
