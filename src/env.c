@@ -33,6 +33,8 @@ bool isTyequTy(Ty_ty s1, Ty_ty s2)
         {
             return TRUE;
         }
+        if (isary && (tmp1->kind ==Ty_int || tmp2->kind == Ty_int) )
+            return TRUE;
         return FALSE;
     }
     if(isary)

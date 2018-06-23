@@ -122,3 +122,38 @@ int fact(int a){
 int main(){
 	return fact(5);
 }#
+
+///
+
+struct s{
+	int n;
+	int sum;
+	int fact;
+};
+
+int fact(int a){
+	int ret;
+	if(a <= 1)
+		ret = 1;
+	else
+		ret = fact(a-1) * a;
+	return ret;
+}
+
+void rec(struct s *p){
+	int s = 0;
+	(*p).fact = fact((*p).n);
+	while((*p).n){
+		s = s + (*p).n;
+		(*p).n = (*p).n - 1;
+	}
+	(*p).sum = s;
+	return;
+}
+
+int main(){
+	struct s tmp;
+	tmp.n = 5;
+	rec(&tmp);
+	return tmp.sum + tmp.fact;
+}#
